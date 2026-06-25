@@ -1,15 +1,43 @@
 import request from '@/utils/request'
 
-//设置code
-export const setWxampCode = (uuid, code) => {
+//学生端微信一键登录（先建游客账再升级）
+export function studentPhoneLogin(phoneCode, loginCode) {
 	return request({
-		url: '/wxampCode',
+		url: '/studentPhoneLogin',
 		header: {
 			isToken: false
 		},
-		method: 'GET',
+		method: 'POST',
 		data: {
-			uuid: uuid,
+			phoneCode: phoneCode,
+			loginCode: loginCode
+		}
+	})
+}
+
+// 学生端静默登录：仅凭 loginCode 做 openid 匹配，已绑定则直接返回 token
+export function studentSilentLogin(loginCode) {
+	return request({
+		url: '/studentSilentLogin',
+		header: {
+			isToken: false
+		},
+		method: 'POST',
+		data: {
+			loginCode: loginCode
+		}
+	})
+}
+
+//设置code
+export const setWxampCode = (uuid, code) => {
+	return request({
+		url: '/wxLogin',
+		header: {
+			isToken: false
+		},
+		method: 'POST',
+		data: {
 			code: code
 		}
 
@@ -18,11 +46,14 @@ export const setWxampCode = (uuid, code) => {
 //小程序登录
 export const wxampLoginApi = (code) => {
 	return request({
-		url: '/wxampLogin/' + code,
+		url: '/wxLogin',
 		header: {
 			isToken: false
 		},
-		method: 'GET',
+		method: 'POST',
+		data: {
+			code: code
+		}
 	})
 }
 
@@ -53,7 +84,7 @@ export function register(data) {
 //绑定邮箱验证
 export function bindMail(data) {
 	return request({
-		url: '/campus/bindMail',
+		url: '/campus/auth/bindMail',
 		method: 'post',
 		data: data
 	})
@@ -74,7 +105,10 @@ export function emailValidate(uuid) {
 //校验用户名称是否唯一
 export function checkUserNameUnique(userName) {
 	return request({
-		url: '/userNameUnique',
+		url: '/campus/auth/userNameUnique',
+		header: {
+			isToken: false
+		},
 		method: 'get',
 		params: {
 			userName
@@ -85,7 +119,10 @@ export function checkUserNameUnique(userName) {
 //校验用户名称是否唯一
 export function checkEmailUnique(email) {
 	return request({
-		url: '/emailUnique',
+		url: '/campus/auth/emailUnique',
+		header: {
+			isToken: false
+		},
 		method: 'get',
 		params: {
 			email
@@ -116,18 +153,22 @@ export function getCodeImg() {
 //小程序绑定账号
 export function wxampBind(loginBody) {
 	return request({
-		url: '/wxampBind',
+		url: '/wxBind',
 		header: {
 			isToken: false
 		},
-		method: 'post',
-		data: loginBody
+		method: 'POST',
+		data: {
+			code: loginBody.code,
+			username: loginBody.username,
+			password: loginBody.password
+		}
 	})
 }
 //小程序注册账号
 export function wxampRegister(loginBody) {
 	return request({
-		url: '/wxampRegister',
+		url: '/campus/auth/wxampRegister',
 		header: {
 			isToken: false
 		},

@@ -26,27 +26,10 @@
 				"navigationBarTitleText": "我的"
 			}
 		},
-		/** -----login----- */
 		{
-			//账号密码登录
-			"path": "pages/login/accountLogin",
+			"path": "pages/me/setting",
 			"style": {
-				"navigationBarTitleText": "登录"
-			}
-
-		},
-		{
-			//小程序绑定账号
-			"path": "pages/login/bind",
-			"style": {
-				"navigationBarTitleText": "用户绑定"
-			}
-		},
-		{
-			//小程序注册账号
-			"path": "pages/login/bind-register",
-			"style": {
-				"navigationBarTitleText": "用户注册"
+				"navigationBarTitleText": "系统设置"
 			}
 		},
 		/** -----auth----- */
@@ -76,6 +59,44 @@
 			"path": "pages/c/index",
 			"style": {
 				"navigationBarTitleText": "墙"
+			}
+		},
+		/** -----leave----- */
+		{
+			"path": "pages/leave/index",
+			"style": {
+				"navigationBarTitleText": "我的请假",
+				"enablePullDownRefresh": false
+			}
+		},
+		/** -----activity----- */
+		{
+			"path": "pages/activity/index",
+			"style": {
+				"navigationBarTitleText": "活动报名",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/activity/detail",
+			"style": {
+				"navigationBarTitleText": "活动详情",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/activity/my",
+			"style": {
+				"navigationBarTitleText": "我的活动",
+				"enablePullDownRefresh": false
+			}
+		},
+		/** -----attendance----- */
+		{
+			"path": "pages/attendance/index",
+			"style": {
+				"navigationBarTitleText": "出勤与积分",
+				"enablePullDownRefresh": true
 			}
 		}
 

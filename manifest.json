@@ -1,6 +1,6 @@
 {
     "name" : "uni-app_campus_web",
-    "appid" : "__UNI__7B0CB17",
+    "appid" : "__UNI__A5C2747",
     "description" : "",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -57,12 +57,17 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "wx4957f5c650534e63",
+        "appid" : "wx7ef14f2719e9382d",
         "setting" : {
-            "urlCheck" : false
+            "urlCheck" : false,
+            "postcss" : true
         },
         "usingComponents" : true,
-        "permission" : {}
+        "permission" : {
+            "scope.userLocation" : {
+                "desc" : "需要位置服务"
+            }
+        }
     },
     "mp-alipay" : {
         "usingComponents" : true

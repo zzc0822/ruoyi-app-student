@@ -70,6 +70,15 @@ instance.interceptors.response.use(
 		} else if (code == 500) {
 			toast(msg)
 			return Promise.reject(msg)
+		} else if (code == 40004) {
+			// 教师账号拦截：用showModal，确保用户能看清
+			uni.showModal({
+				title: '提示',
+				content: msg || '该手机号已注册为教师账号',
+				showCancel: false,
+				confirmText: '我知道了'
+			});
+			return Promise.reject(msg)
 		} else if (code !== 200) {
 			toast(msg)
 			return Promise.reject(msg)

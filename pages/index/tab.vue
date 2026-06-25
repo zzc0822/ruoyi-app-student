@@ -68,18 +68,40 @@
 		},
 		data() {
 			return {
-				PageCur: 0,
+				PageCur: isLogin() ? 0 : 2,
 				show: false,
 			}
 		},
 		onLoad(option) {
-			var page = parseInt(option.PageCur)
-			this.PageCur = option.PageCur
+			if (option.PageCur !== undefined) {
+				this.PageCur = parseInt(option.PageCur);
+			}
+			// 未登录时自动跳转到"我的"页面展示登录入口
+			if (!isLogin()) {
+				this.PageCur = 2;
+			}
+			// 监听静默登录成功事件：登录成功后自动切回首页，避免停留在登录 UI
+			uni.$on('app:silentLoginSuccess', this.onSilentLoginSuccess);
+		},
+		onUnload() {
+			uni.$off('app:silentLoginSuccess', this.onSilentLoginSuccess);
+		},
+		onShow() {
+			// 防止从其他页面返回时状态不一致：已登录但还停留在登录页则切回首页
+			if (this.PageCur === 2 && isLogin()) {
+				this.PageCur = 0;
+			}
 		},
 		onReady() {
 
 		},
 		methods: {
+			onSilentLoginSuccess() {
+				// 静默登录成功后，如果当前在"我的"登录页，自动切换到首页
+				if (this.PageCur === 2 && isLogin()) {
+					this.PageCur = 0;
+				}
+			},
 			change(name) {
 				if (name == 1) {
 					this.show = true;
