@@ -98,6 +98,14 @@
 				"navigationBarTitleText": "出勤与积分",
 				"enablePullDownRefresh": true
 			}
+		},
+		/** -----score----- */
+		{
+			"path": "pages/score/record",
+			"style": {
+				"navigationBarTitleText": "积分明细",
+				"enablePullDownRefresh": true
+			}
 		}
 
 	],

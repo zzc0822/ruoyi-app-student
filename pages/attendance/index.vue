@@ -7,6 +7,9 @@
 				<text class="score-unit">分</text>
 			</view>
 			<text class="score-label">第二课堂加权总成绩</text>
+			<view class="score-entry" @click="goScoreRecord">
+				<text>查看积分明细 ›</text>
+			</view>
 		</view>
 
 		<!-- 六维分数 -->
@@ -104,6 +107,9 @@ export default {
 		this.loadStats().finally(() => uni.stopPullDownRefresh())
 	},
 	methods: {
+		goScoreRecord() {
+			uni.navigateTo({ url: '/pages/score/record' })
+		},
 		async loadStats() {
 			this.loading = true
 			try {
@@ -136,6 +142,7 @@ export default {
 .score-num { font-size: 80rpx; font-weight: bold; line-height: 1; }
 .score-unit { font-size: 32rpx; margin-left: 8rpx; margin-bottom: 10rpx; opacity: 0.9; }
 .score-label { font-size: 26rpx; opacity: 0.85; display: block; }
+.score-entry { margin-top: 24rpx; display: inline-block; font-size: 26rpx; color: #fff; background: rgba(255,255,255,0.2); padding: 10rpx 28rpx; border-radius: 32rpx; }
 
 .five-card {
 	background: #fff;

@@ -57,6 +57,10 @@
 							<text class="info-label">审批流程</text>
 							<text class="info-val flow-text">{{ flowText(item) }}</text>
 						</view>
+						<view class="info-row" v-if="item.scorePoints != null">
+							<text class="info-label">扣分</text>
+							<text class="info-val score-points">{{ item.scorePoints }} 分</text>
+						</view>
 						<view class="info-row" v-if="item.leaveAttachmentList && item.leaveAttachmentList.length">
 							<text class="info-label">佐证材料</text>
 							<view class="attach-list">
@@ -683,6 +687,7 @@ export default {
 .reason-text { word-break: break-all; }
 .flow-text { color: #4a7cf6; word-break: break-all; }
 .next-approver { color: #fa8c16; word-break: break-all; }
+.score-points { color: #f5222d; font-weight: bold; }
 .attach-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 8rpx; flex: 1; }
 .attach-img { width: 120rpx; height: 120rpx; border-radius: 10rpx; background: #f5f5f5; }
 .empty-tip { text-align: center; padding: 80rpx 0; color: #999; font-size: 28rpx; }
