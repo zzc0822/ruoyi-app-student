@@ -459,6 +459,7 @@ export default {
 					try {
 						data = JSON.parse(res.data)
 					} catch (e) {
+						this.removeUploadFail(filePath)
 						uni.showToast({ title: '上传响应解析失败', icon: 'none' })
 						return
 					}
@@ -472,13 +473,23 @@ export default {
 							mediaType: fileData.mediaType || 'image'
 						})
 					} else {
+						this.removeUploadFail(filePath)
 						uni.showToast({ title: data.msg || '上传失败', icon: 'none' })
 					}
 				},
-				fail: () => {
-					uni.showToast({ title: '上传失败', icon: 'none' })
+				fail: (err) => {
+					this.removeUploadFail(filePath)
+					console.error('上传失败', err)
+					uni.showToast({ title: '图片上传失败，请重试', icon: 'none' })
 				}
 			})
+		},
+		// 上传失败时移除对应图片
+		removeUploadFail(filePath) {
+			const idx = this.photoList.indexOf(filePath)
+			if (idx > -1) {
+				this.photoList.splice(idx, 1)
+			}
 		},
 		// 移除已选图片
 		removeImage(idx) {
