@@ -49,6 +49,26 @@
 							<text class="info-label">审批意见</text>
 							<text class="info-val">{{ item.approvalRemark }}</text>
 						</view>
+						<view class="info-row" v-if="item.approvalStatus === 'pending' || item.approvalStatus === 'forward'">
+							<text class="info-label">下一步审批</text>
+							<text class="info-val next-approver">{{ nextApproverText(item) }}</text>
+						</view>
+						<view class="info-row">
+							<text class="info-label">审批流程</text>
+							<text class="info-val flow-text">{{ flowText(item) }}</text>
+						</view>
+						<view class="info-row" v-if="item.leaveAttachmentList && item.leaveAttachmentList.length">
+							<text class="info-label">佐证材料</text>
+							<view class="attach-list">
+								<image
+									v-for="(img, imgIdx) in item.leaveAttachmentList"
+									:key="imgIdx"
+									class="attach-img"
+									:src="img.filePath"
+									mode="aspectFill"
+									@click.stop="previewAttachment(imgIdx, item.leaveAttachmentList)"></image>
+							</view>
+						</view>
 						<view class="info-row">
 							<text class="info-label">申请时间</text>
 							<text class="info-val">{{ formatDate(item.createTime) }}</text>
@@ -589,6 +609,45 @@ export default {
 			if (!val) return '--'
 			return String(val).substring(0, 10)
 		},
+		// 审批流程文本
+		flowText(item) {
+			const status = item.approvalStatus
+			const level = item.approvalLevel
+			const steps = ['提交申请']
+			if (level === 'secretary') {
+				steps.push('辅导员核验')
+				steps.push('书记审批')
+			} else {
+				steps.push('辅导员审批')
+			}
+			const prefix = steps.join(' → ')
+			if (status === 'approved') return prefix + '（已完成）'
+			if (status === 'rejected') return prefix + '（已拒绝）'
+			if (status === 'forward') return prefix + '（转上级审批中）'
+			return prefix + '（进行中）'
+		},
+		// 下一步审批人文本
+		nextApproverText(item) {
+			if (item.approvalStatus === 'approved' || item.approvalStatus === 'rejected') {
+				return '—'
+			}
+			const name = item.counselorName || '辅导员'
+			const phone = item.counselorPhone || ''
+			const counselor = `${name}${phone ? '（' + phone + '）' : ''}`
+			if (item.approvalStatus === 'forward' || item.approvalLevel === 'secretary') {
+				return `${counselor} → 书记`
+			}
+			return counselor
+		},
+		// 预览列表项佐证图片
+		previewAttachment(idx, list) {
+			const urls = (list || []).map(a => a.filePath).filter(Boolean)
+			if (!urls.length) return
+			uni.previewImage({
+				current: idx,
+				urls: urls
+			})
+		},
 		// Date对象格式化为 yyyy-MM-dd
 		formatDateStr(d) {
 			const y = d.getFullYear()
@@ -622,6 +681,10 @@ export default {
 .info-label { color: #999; font-size: 24rpx; width: 150rpx; flex-shrink: 0; }
 .info-val { color: #333; font-size: 24rpx; flex: 1; }
 .reason-text { word-break: break-all; }
+.flow-text { color: #4a7cf6; word-break: break-all; }
+.next-approver { color: #fa8c16; word-break: break-all; }
+.attach-list { display: flex; flex-wrap: wrap; gap: 12rpx; margin-top: 8rpx; flex: 1; }
+.attach-img { width: 120rpx; height: 120rpx; border-radius: 10rpx; background: #f5f5f5; }
 .empty-tip { text-align: center; padding: 80rpx 0; color: #999; font-size: 28rpx; }
 .load-more { text-align: center; padding: 24rpx; color: #4a7cf6; font-size: 26rpx; }
 .apply-wrap { padding: 16rpx; }
