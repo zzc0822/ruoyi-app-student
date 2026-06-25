@@ -463,8 +463,14 @@ export default {
 						uni.showToast({ title: '上传响应解析失败', icon: 'none' })
 						return
 					}
-					if (data.code === 200 && data.data) {
-						const fileData = data.data
+					if (data.code === 200) {
+						// 后端上传接口直接返回扁平结构（url/fileName等），也可能在 data 字段中
+						const fileData = data.data || data
+						if (!fileData.url) {
+							this.removeUploadFail(filePath)
+							uni.showToast({ title: '上传响应缺少文件URL', icon: 'none' })
+							return
+						}
 						this.uploadedFiles.push({
 							filePath: fileData.url || '',
 							fileName: fileData.fileName || '',
@@ -472,6 +478,7 @@ export default {
 							fileType: fileData.fileType || 'jpg',
 							mediaType: fileData.mediaType || 'image'
 						})
+						uni.showToast({ title: '上传成功', icon: 'success' })
 					} else {
 						this.removeUploadFail(filePath)
 						uni.showToast({ title: data.msg || '上传失败', icon: 'none' })
