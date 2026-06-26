@@ -43,8 +43,10 @@
 
 <script>
 import { getScoreRecords, getScoreSummary } from '@/api/score.js'
+import requireLogin from '@/mixins/requireLogin.js'
 
 export default {
+	mixins: [requireLogin],
 	data() {
 		return {
 			list: [],

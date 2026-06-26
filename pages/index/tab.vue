@@ -68,28 +68,24 @@
 		},
 		data() {
 			return {
-				PageCur: isLogin() ? 0 : 2,
+				PageCur: 0,
 				show: false,
 			}
 		},
 		onLoad(option) {
+			// 所有页面必须登录，未登录直接跳转到统一登录页
+			if (!isLogin()) {
+				uni.reLaunch({ url: '/pages/login/wxLogin' });
+				return;
+			}
 			if (option.PageCur !== undefined) {
 				this.PageCur = parseInt(option.PageCur);
 			}
-			// 未登录时自动跳转到"我的"页面展示登录入口
-			if (!isLogin()) {
-				this.PageCur = 2;
-			}
-			// 监听静默登录成功事件：登录成功后自动切回首页，避免停留在登录 UI
-			uni.$on('app:silentLoginSuccess', this.onSilentLoginSuccess);
-		},
-		onUnload() {
-			uni.$off('app:silentLoginSuccess', this.onSilentLoginSuccess);
 		},
 		onShow() {
-			// 未登录时强制停留在"我的"页，引导登录
+			// 所有页面必须登录，未登录直接跳转到统一登录页
 			if (!isLogin()) {
-				this.PageCur = 2;
+				uni.reLaunch({ url: '/pages/login/wxLogin' });
 				return;
 			}
 			// 防止从其他页面返回时状态不一致：已登录但还停留在登录页则切回首页
@@ -101,12 +97,6 @@
 
 		},
 		methods: {
-			onSilentLoginSuccess() {
-				// 静默登录成功后，如果当前在"我的"登录页，自动切换到首页
-				if (this.PageCur === 2 && isLogin()) {
-					this.PageCur = 0;
-				}
-			},
 			change(name) {
 				if (name == 1) {
 					this.show = true;

@@ -49,8 +49,10 @@
 <script>
 	import userInfoApi from "@/api/userInfo.js"
 	import { removeToken } from "@/utils/auth";
+	import requireLogin from '@/mixins/requireLogin.js';
 
 	export default {
+		mixins: [requireLogin],
 		data() {
 			return {
 				pwdShow: false,

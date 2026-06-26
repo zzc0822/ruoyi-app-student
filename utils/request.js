@@ -25,12 +25,9 @@ instance.interceptors.request.use(
 		if (getToken() && !isToken) {
 			config.header['Authorization'] = 'Bearer ' + getToken()
 		}
-		// console.log('发送请求前', config)
 		return config
 	},
 	error => {
-		// 对请求错误做些什么
-		// console.log('发请求错误', error)
 		uni.showToast({
 			icon: 'error',
 			title: '后端接口请求异常'
@@ -43,35 +40,21 @@ instance.interceptors.request.use(
 instance.interceptors.response.use(
 	//响应成功后
 	response => {
-		// console.log('响应成功后', response)
-		// 未设置状态码则默认成功状态
 		const code = response.data.code || 200;
-		// 获取错误信息
 		const msg = response.data.msg
-		if (code == 401) {
+		// 登录类接口（isLoginApi）不拦截 401，由调用方自行处理
+		const isLoginApi = response.config && response.config.header && response.config.header['isLoginApi'] === true;
+		if (code == 401 && !isLoginApi) {
 			const hadToken = getToken();
 			removeToken();
-			// 本地原本就没有 token 时（如静默登录未绑定），不弹登录过期提示，避免干扰正常登录流程
-			if (!hadToken) {
-				return Promise.reject(msg || "未登录")
-			}
-			uni.showModal({
-				title: '提示',
-				content: '登录状态已过期，您可以继续留在该页面，或者重新登录?',
-				confirmText: '登录',
-				success: function (res) {
-					if (res.confirm) {
-						uni.navigateTo({
-							url: '/pages/login/wxLogin'
-						})
-						return Promise.reject("")
-					} else if (res.cancel) {
-						// console.log('用户点击取消');
-					}
-				}
+			// 统一跳转到登录页，确保所有页面都需要登录
+			uni.reLaunch({
+				url: '/pages/login/wxLogin'
 			});
-			toast('无效的会话，或者会话已过期，请重新登录。')
-			return Promise.reject("无效的会话，或者会话已过期，请重新登录。")
+			if (hadToken) {
+				toast('登录状态已过期，请重新登录');
+			}
+			return Promise.reject(msg || "未登录")
 		} else if (code == 500) {
 			toast(msg)
 			return Promise.reject(msg)

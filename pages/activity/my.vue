@@ -35,6 +35,7 @@
 		listMyActivities,
 		cancelSignupActivity
 	} from '@/api/activity'
+	import requireLogin from '@/mixins/requireLogin.js'
 
 	const STATUS_MAP = {
 		'0': '已报名',
@@ -51,6 +52,7 @@
 	}
 
 	export default {
+		mixins: [requireLogin],
 		data() {
 			return {
 				queryParam: {

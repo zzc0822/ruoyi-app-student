@@ -70,16 +70,14 @@
 							if (data.code === 200 && token) {
 								// openid 已绑定，直接登录成功
 								setToken(token);
-								uni.showToast({ title: '登录成功', icon: 'success' });
-								setTimeout(() => {
-									uni.reLaunch({
-										url: '/pages/index/tab',
-										fail: (err) => {
-											console.error('wxLogin reLaunch失败', err);
-											this.errorMsg = '跳转失败，请手动返回首页';
-										}
-									});
-								}, 500);
+								console.log('[静默登录] 成功，准备跳转首页');
+								uni.reLaunch({
+									url: '/pages/index/tab',
+									fail: (err) => {
+										console.error('[静默登录] reLaunch失败', err);
+										this.errorMsg = '跳转首页失败：' + (err && err.errMsg ? err.errMsg : JSON.stringify(err));
+									}
+								});
 							} else if (data.code === 401 || data.code === 400) {
 								// 未绑定或 openid 不存在，展示一键登录按钮
 								this.errorMsg = data.msg || '当前微信未绑定学生账号，请使用一键登录绑定';
@@ -123,15 +121,14 @@
 							const token = data.data && data.data.token ? data.data.token : null;
 							if (data.code === 200 && token) {
 								setToken(token);
-								uni.showToast({ title: '登录成功', icon: 'success' });
-								setTimeout(() => {
-									uni.reLaunch({
-										url: '/pages/index/tab',
-										fail: (err) => {
-											console.error('wxLogin reLaunch失败', err);
-										}
-									});
-								}, 500);
+								console.log('[一键登录] 成功，准备跳转首页');
+								uni.reLaunch({
+									url: '/pages/index/tab',
+									fail: (err) => {
+										console.error('[一键登录] reLaunch失败', err);
+										uni.showToast({ title: '跳转首页失败', icon: 'none' });
+									}
+								});
 							} else {
 								uni.showToast({ title: data.msg || '登录失败', icon: 'none' });
 							}

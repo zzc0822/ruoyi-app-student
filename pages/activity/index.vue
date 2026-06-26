@@ -43,6 +43,7 @@
 	import {
 		listOpenActivities
 	} from '@/api/activity'
+	import requireLogin from '@/mixins/requireLogin.js'
 
 	const CATEGORY_MAP = {
 		de: '德育',
@@ -54,6 +55,7 @@
 	}
 
 	export default {
+		mixins: [requireLogin],
 		data() {
 			return {
 				activeDim: '',

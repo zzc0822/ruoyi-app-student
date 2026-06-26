@@ -227,8 +227,10 @@ import { getMyLeaves, applyLeave, getLeaveScoreHint } from '@/api/leave.js'
 import userInfoApi from '@/api/userInfo.js'
 import config from '@/config'
 import { isLogin } from '@/utils/auth'
+import requireLogin from '@/mixins/requireLogin.js'
 
 export default {
+	mixins: [requireLogin],
 	data() {
 		return {
 			activeTab: 0,

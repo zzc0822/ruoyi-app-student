@@ -50,6 +50,7 @@
 		getActivityDetail,
 		signupActivity
 	} from '@/api/activity'
+	import requireLogin from '@/mixins/requireLogin.js'
 
 	const CATEGORY_MAP = {
 		de: '德育',
@@ -61,6 +62,7 @@
 	}
 
 	export default {
+		mixins: [requireLogin],
 		data() {
 			return {
 				activityId: null,

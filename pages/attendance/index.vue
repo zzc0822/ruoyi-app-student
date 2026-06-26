@@ -76,8 +76,10 @@
 
 <script>
 import userInfoApi from '@/api/userInfo.js'
+import requireLogin from '@/mixins/requireLogin.js'
 
 export default {
+	mixins: [requireLogin],
 	data() {
 		return {
 			stats: null,

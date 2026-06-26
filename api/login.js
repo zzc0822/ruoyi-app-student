@@ -5,7 +5,8 @@ export function studentPhoneLogin(phoneCode, loginCode) {
 	return request({
 		url: '/studentPhoneLogin',
 		header: {
-			isToken: false
+			isToken: false,
+			isLoginApi: true
 		},
 		method: 'POST',
 		data: {
@@ -20,7 +21,8 @@ export function studentSilentLogin(loginCode) {
 	return request({
 		url: '/studentSilentLogin',
 		header: {
-			isToken: false
+			isToken: false,
+			isLoginApi: true
 		},
 		method: 'POST',
 		data: {

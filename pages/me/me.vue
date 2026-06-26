@@ -315,10 +315,6 @@
 			</u-popup>
 
 		</view>
-
-		<view v-if="!isLogin">
-			<!-- 未登录时不显示登录UI，直接跳转到统一登录页 -->
-		</view>
 	</view>
 </template>
 
@@ -326,11 +322,7 @@
 	import userInfoApi from "@/api/userInfo.js"
 	import config from '@/config';
 	import {
-		studentPhoneLogin
-	} from "@/api/login"
-	import {
 		isLogin,
-		setToken,
 		setUserId
 	} from "@/utils/auth";
 	import { handleCampusUrl } from "@/utils/campus";
@@ -426,11 +418,6 @@
 				this.getUserInfo();
 				this.getRandomQuote();
 			}
-			// 监听 App.vue 静默登录成功事件，自动刷新用户状态
-			uni.$on('app:silentLoginSuccess', this.onSilentLoginSuccess);
-		},
-		onUnload() {
-			uni.$off('app:silentLoginSuccess', this.onSilentLoginSuccess);
 		},
 		watch: {
 			activeTab(val) {
@@ -442,12 +429,12 @@
 		onShow() {
 			// 未登录时直接跳转到统一登录页
 			if (!isLogin()) {
-				uni.navigateTo({
+				uni.reLaunch({
 					url: '/pages/login/wxLogin'
 				});
 				return;
 			}
-			// 如果未登录但 token 已存在（App.vue 静默登录写入），自动初始化登录状态
+			// 如果 token 已存在但 isLogin 还是 false（例如从 wxLogin 登录成功后返回），自动初始化登录状态
 			if (!this.isLogin && isLogin()) {
 				this.isLogin = true;
 				this.getUserInfo();
@@ -459,75 +446,6 @@
 			}
 		},
 		methods: {
-			onSilentLoginSuccess() {
-				// App.vue 静默登录成功后触发：如果当前还是未登录状态，自动刷新为已登录
-				if (!this.isLogin && isLogin()) {
-					this.isLogin = true;
-					this.getUserInfo();
-					this.getRandomQuote();
-				}
-			},
-			onGetPhoneNumber(e) {
-				if (e.detail.errMsg !== 'getPhoneNumber:ok') {
-					uni.showToast({ title: '需要授权手机号才能登录', icon: 'none' });
-					return;
-				}
-				const phoneCode = e.detail.code;
-				if (!phoneCode) {
-					uni.showToast({ title: '获取手机号失败，请重试', icon: 'none' });
-					return;
-				}
-				uni.showLoading({ title: '登录中' });
-				uni.login({
-					provider: 'weixin',
-					success: (loginRes) => {
-						const loginCode = loginRes.code;
-						studentPhoneLogin(phoneCode, loginCode).then(({
-							data
-						}) => {
-							uni.hideLoading();
-							// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
-							const token = data.data && data.data.token ? data.data.token : null;
-							if (token) {
-								setToken(token);
-								this.isLogin = true;
-								this.getUserInfo();
-								this.getRandomQuote();
-								const innerData = data.data || {};
-								if (innerData.isStudent) {
-									uni.showToast({ title: '欢迎, ' + innerData.studentName, icon: 'none' });
-								} else {
-									uni.showToast({ title: '登录成功，游客身份', icon: 'none' });
-								}
-								setTimeout(() => {
-									uni.reLaunch({ url: '/pages/index/tab' });
-								}, 500);
-							} else {
-								uni.showToast({ title: data.msg || '登录失败', icon: 'none' });
-							}
-						}).catch((err) => {
-							uni.hideLoading();
-						});
-					},
-					fail: () => {
-						uni.hideLoading();
-						uni.showToast({ title: '微信登录失败', icon: 'none' });
-					}
-				});
-			},
-
-			loginHandle() {
-				if (!isLogin()) {
-					uni.navigateTo({
-						url: '/pages/login/wxLogin'
-					});
-				} else {
-					this.isLogin = true;
-				}
-				if (isLogin()) {
-					this.getUserInfo();
-				}
-			},
 			getUserInfo() {
 				userInfoApi.getUserInfo().then(({ data }) => {
 					this.user = data.user;
