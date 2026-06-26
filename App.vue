@@ -17,10 +17,12 @@
 				provider: 'weixin',
 				success: (res) => {
 					studentSilentLogin(res.code).then(({ data }) => {
-						if (data.code === 200 && data.token) {
-							setToken(data.token);
+						// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
+						const token = data.data && data.data.token ? data.data.token : null;
+						if (data.code === 200 && token) {
+							setToken(token);
 							// 静默登录成功，通知各页面刷新登录状态，避免登录 UI 闪现
-							uni.$emit('app:silentLoginSuccess', { token: data.token });
+							uni.$emit('app:silentLoginSuccess', { token: token });
 						} else {
 							// openid 未绑定或登录失败，统一跳转到一键登录页
 							uni.reLaunch({ url: '/pages/login/wxLogin' });

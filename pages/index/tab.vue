@@ -87,6 +87,11 @@
 			uni.$off('app:silentLoginSuccess', this.onSilentLoginSuccess);
 		},
 		onShow() {
+			// 未登录时强制停留在"我的"页，引导登录
+			if (!isLogin()) {
+				this.PageCur = 2;
+				return;
+			}
 			// 防止从其他页面返回时状态不一致：已登录但还停留在登录页则切回首页
 			if (this.PageCur === 2 && isLogin()) {
 				this.PageCur = 0;

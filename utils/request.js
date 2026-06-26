@@ -49,7 +49,12 @@ instance.interceptors.response.use(
 		// 获取错误信息
 		const msg = response.data.msg
 		if (code == 401) {
+			const hadToken = getToken();
 			removeToken();
+			// 本地原本就没有 token 时（如静默登录未绑定），不弹登录过期提示，避免干扰正常登录流程
+			if (!hadToken) {
+				return Promise.reject(msg || "未登录")
+			}
 			uni.showModal({
 				title: '提示',
 				content: '登录状态已过期，您可以继续留在该页面，或者重新登录?',
@@ -57,7 +62,7 @@ instance.interceptors.response.use(
 				success: function (res) {
 					if (res.confirm) {
 						uni.navigateTo({
-							url: '/pages/me/me'
+							url: '/pages/login/wxLogin'
 						})
 						return Promise.reject("")
 					} else if (res.cancel) {

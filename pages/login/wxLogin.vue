@@ -59,9 +59,11 @@
 					provider: 'weixin',
 					success: (res) => {
 						studentSilentLogin(res.code).then(({ data }) => {
-							if (data.code === 200 && data.token) {
+							// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
+							const token = data.data && data.data.token ? data.data.token : null;
+							if (data.code === 200 && token) {
 								// openid 已绑定，直接登录成功
-								setToken(data.token);
+								setToken(token);
 								uni.showToast({ title: '登录成功', icon: 'success' });
 								uni.reLaunch({ url: '/pages/index/tab' });
 							} else if (data.code === 401 || data.code === 400) {
@@ -101,8 +103,10 @@
 						const loginCode = loginRes.code;
 						studentPhoneLogin(phoneCode, loginCode).then(({ data }) => {
 							uni.hideLoading();
-							if (data.code === 200 && data.token) {
-								setToken(data.token);
+							// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
+							const token = data.data && data.data.token ? data.data.token : null;
+							if (data.code === 200 && token) {
+								setToken(token);
 								uni.showToast({ title: '登录成功', icon: 'success' });
 								uni.reLaunch({ url: '/pages/index/tab' });
 							} else {

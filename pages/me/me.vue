@@ -486,14 +486,21 @@
 							data
 						}) => {
 							uni.hideLoading();
-							setToken(data.token);
-							this.isLogin = true;
-							this.getUserInfo();
-							this.getRandomQuote();
-							if (data.isStudent) {
-								uni.showToast({ title: '欢迎, ' + data.studentName, icon: 'none' });
+							// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
+							const token = data.data && data.data.token ? data.data.token : null;
+							if (token) {
+								setToken(token);
+								this.isLogin = true;
+								this.getUserInfo();
+								this.getRandomQuote();
+								const innerData = data.data || {};
+								if (innerData.isStudent) {
+									uni.showToast({ title: '欢迎, ' + innerData.studentName, icon: 'none' });
+								} else {
+									uni.showToast({ title: '登录成功，游客身份', icon: 'none' });
+								}
 							} else {
-								uni.showToast({ title: '登录成功，游客身份', icon: 'none' });
+								uni.showToast({ title: data.msg || '登录失败', icon: 'none' });
 							}
 						}).catch((err) => {
 							uni.hideLoading();
