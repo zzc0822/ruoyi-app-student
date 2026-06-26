@@ -18,6 +18,10 @@
 			</view>
 			<!-- #endif -->
 
+			<view class="error-msg" v-if="errorMsg">
+				<text>{{ errorMsg }}</text>
+			</view>
+
 			<view class="account-entry">
 				<text @click="goAccountLogin">使用账号密码登录</text>
 			</view>
@@ -39,7 +43,8 @@
 	export default {
 		data() {
 			return {
-				showPhoneLogin: false
+				showPhoneLogin: false,
+				errorMsg: ''
 			}
 		},
 		onLoad() {
@@ -55,6 +60,7 @@
 			// 第一步：使用 openid 静默登录
 			trySilentLogin() {
 				this.showPhoneLogin = false;
+				this.errorMsg = '';
 				uni.login({
 					provider: 'weixin',
 					success: (res) => {
@@ -68,18 +74,20 @@
 								uni.reLaunch({ url: '/pages/index/tab' });
 							} else if (data.code === 401 || data.code === 400) {
 								// 未绑定或 openid 不存在，展示一键登录按钮
+								this.errorMsg = data.msg || '当前微信未绑定学生账号，请使用一键登录绑定';
 								this.showPhoneLogin = true;
 							} else {
-								uni.showToast({ title: data.msg || '登录失败', icon: 'none' });
+								this.errorMsg = data.msg || '登录失败';
 								this.showPhoneLogin = true;
 							}
 						}).catch((err) => {
 							console.error('静默登录失败', err);
+							this.errorMsg = (err && err.msg) ? err.msg : '网络异常，请重试';
 							this.showPhoneLogin = true;
 						});
 					},
 					fail: () => {
-						uni.showToast({ title: '微信登录失败', icon: 'none' });
+						this.errorMsg = '微信登录失败，请检查小程序授权';
 						this.showPhoneLogin = true;
 					}
 				});
@@ -208,6 +216,16 @@
 		font-size: 28rpx;
 		color: #666;
 		margin-top: 40rpx;
+	}
+
+	.error-msg {
+		background: rgba(255, 107, 107, 0.15);
+		color: #d93025;
+		font-size: 26rpx;
+		padding: 20rpx;
+		border-radius: 10rpx;
+		margin-top: 30rpx;
+		text-align: center;
 	}
 
 	.account-entry text {

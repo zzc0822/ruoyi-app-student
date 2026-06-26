@@ -317,14 +317,7 @@
 		</view>
 
 		<view v-if="!isLogin">
-			<view class="login-container">
-				<!-- #ifdef MP-WEIXIN -->
-				<button class="login-btn" @click="loginHandle">微信一键登录</button>
-				<!-- #endif -->
-				<!-- #ifndef MP-WEIXIN -->
-				<u-button type="primary" @click="loginHandle()" text="点击登录"></u-button>
-				<!-- #endif -->
-			</view>
+			<!-- 未登录时不显示登录UI，直接跳转到统一登录页 -->
 		</view>
 	</view>
 </template>
@@ -447,6 +440,13 @@
 			}
 		},
 		onShow() {
+			// 未登录时直接跳转到统一登录页
+			if (!isLogin()) {
+				uni.navigateTo({
+					url: '/pages/login/wxLogin'
+				});
+				return;
+			}
 			// 如果未登录但 token 已存在（App.vue 静默登录写入），自动初始化登录状态
 			if (!this.isLogin && isLogin()) {
 				this.isLogin = true;
