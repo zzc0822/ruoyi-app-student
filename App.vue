@@ -21,7 +21,14 @@
 						const token = data.data && data.data.token ? data.data.token : null;
 						if (data.code === 200 && token) {
 							setToken(token);
-							// 静默登录成功，通知各页面刷新登录状态，避免登录 UI 闪现
+							// 静默登录成功，直接回到首页
+							uni.reLaunch({
+								url: '/pages/index/tab',
+								fail: (err) => {
+									console.error('App.vue reLaunch失败', err);
+								}
+							});
+							// 同时通知各页面刷新登录状态
 							uni.$emit('app:silentLoginSuccess', { token: token });
 						} else {
 							// openid 未绑定或登录失败，统一跳转到一键登录页

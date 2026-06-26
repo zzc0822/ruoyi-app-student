@@ -499,6 +499,9 @@
 								} else {
 									uni.showToast({ title: '登录成功，游客身份', icon: 'none' });
 								}
+								setTimeout(() => {
+									uni.reLaunch({ url: '/pages/index/tab' });
+								}, 500);
 							} else {
 								uni.showToast({ title: data.msg || '登录失败', icon: 'none' });
 							}
