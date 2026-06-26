@@ -120,7 +120,7 @@
 					success: (res) => {
 						if (res.confirm) {
 							removeToken();
-							uni.reLaunch({ url: '/pages/index/tab' });
+							uni.reLaunch({ url: '/pages/login/wxLogin' });
 						}
 					}
 				});

@@ -319,7 +319,7 @@
 		<view v-if="!isLogin">
 			<view class="login-container">
 				<!-- #ifdef MP-WEIXIN -->
-				<button class="login-btn" open-type="getPhoneNumber" @getphonenumber="onGetPhoneNumber">微信一键登录</button>
+				<button class="login-btn" @click="loginHandle">微信一键登录</button>
 				<!-- #endif -->
 				<!-- #ifndef MP-WEIXIN -->
 				<u-button type="primary" @click="loginHandle()" text="点击登录"></u-button>
@@ -509,7 +509,7 @@
 			loginHandle() {
 				if (!isLogin()) {
 					uni.navigateTo({
-						url: '/pages/login/accountLogin'
+						url: '/pages/login/wxLogin'
 					});
 				} else {
 					this.isLogin = true;

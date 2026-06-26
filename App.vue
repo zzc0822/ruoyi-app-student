@@ -21,10 +21,13 @@
 							setToken(data.token);
 							// 静默登录成功，通知各页面刷新登录状态，避免登录 UI 闪现
 							uni.$emit('app:silentLoginSuccess', { token: data.token });
+						} else {
+							// openid 未绑定或登录失败，统一跳转到一键登录页
+							uni.reLaunch({ url: '/pages/login/wxLogin' });
 						}
-						// code=401 表示未绑定，不做任何处理，等用户手动点击一键登录
 					}).catch(() => {
-						// 静默登录失败，不弹错，让用户手动登录
+						// 静默登录失败，跳转到登录页由用户手动处理
+						uni.reLaunch({ url: '/pages/login/wxLogin' });
 					});
 				}
 			});

@@ -19,6 +19,20 @@
 				"navigationBarTitleText": "发布"
 			}
 		},
+		{
+			//微信一键登录页（openid优先，未绑定则获取手机号）
+			"path": "pages/login/wxLogin",
+			"style": {
+				"navigationBarTitleText": "微信登录"
+			}
+		},
+		{
+			//账号密码登录
+			"path": "pages/login/accountLogin",
+			"style": {
+				"navigationBarTitleText": "账号登录"
+			}
+		},
 		/** -----me----- */
 		{
 			"path": "pages/me/me",
