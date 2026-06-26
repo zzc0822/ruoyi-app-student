@@ -105,6 +105,11 @@
 							userInfoApi.unbindWx().then(({ data }) => {
 								if (data.code === 200) {
 									uni.showToast({ title: '解绑成功', icon: 'success' });
+									// 解绑后必须清理本地登录态并跳转到登录页
+									removeToken();
+									setTimeout(() => {
+										uni.reLaunch({ url: '/pages/login/wxLogin' });
+									}, 1000);
 								} else {
 									uni.showToast({ title: data.msg || '解绑失败', icon: 'none' });
 								}
