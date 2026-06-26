@@ -65,8 +65,8 @@
 					provider: 'weixin',
 					success: (res) => {
 						studentSilentLogin(res.code).then(({ data }) => {
-							// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
-							const token = data.data && data.data.token ? data.data.token : null;
+							// 后端返回结构：{ code, msg, token, isStudent, studentName }（token在顶层）
+							const token = data.token || (data.data && data.data.token) || null;
 							if (data.code === 200 && token) {
 								// openid 已绑定，直接登录成功
 								setToken(token);
@@ -117,8 +117,8 @@
 						const loginCode = loginRes.code;
 						studentPhoneLogin(phoneCode, loginCode).then(({ data }) => {
 							uni.hideLoading();
-							// 后端返回结构：{ code, msg, data: { token, isStudent, studentName } }
-							const token = data.data && data.data.token ? data.data.token : null;
+							// 后端返回结构：{ code, msg, token, isStudent, studentName }（token在顶层）
+							const token = data.token || (data.data && data.data.token) || null;
 							if (data.code === 200 && token) {
 								setToken(token);
 								console.log('[一键登录] 成功，准备跳转首页');
