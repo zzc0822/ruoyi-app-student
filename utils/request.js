@@ -17,6 +17,9 @@ const instance = ajax.create({
 
 })
 
+// 登录接口标记：登录API调用时设为true，响应拦截器据此跳过401拦截
+let _isLoginApiRequest = false;
+
 // 添加请求拦截器
 instance.interceptors.request.use(
 	config => {
@@ -25,9 +28,12 @@ instance.interceptors.request.use(
 		if (getToken() && !isToken) {
 			config.header['Authorization'] = 'Bearer ' + getToken()
 		}
+		// 标记登录类请求，响应拦截器不拦截其401
+		_isLoginApiRequest = config.header['isLoginApi'] === true
 		return config
 	},
 	error => {
+		_isLoginApiRequest = false
 		uni.showToast({
 			icon: 'error',
 			title: '后端接口请求异常'
@@ -42,9 +48,13 @@ instance.interceptors.response.use(
 	response => {
 		const code = response.data.code || 200;
 		const msg = response.data.msg
-		// 登录类接口（isLoginApi）不拦截 401，由调用方自行处理
-		const isLoginApi = response.config && response.config.header && response.config.header['isLoginApi'] === true;
-		if (code == 401 && !isLoginApi) {
+		const wasLoginApi = _isLoginApiRequest
+		_isLoginApiRequest = false
+		// 登录类接口的响应全部直接返回，由调用方自行处理（不拦截401/40004/其他错误码）
+		if (wasLoginApi) {
+			return response
+		}
+		if (code == 401) {
 			const hadToken = getToken();
 			removeToken();
 			// 统一跳转到登录页，确保所有页面都需要登录
@@ -74,12 +84,12 @@ instance.interceptors.response.use(
 		return response
 	},
 	error => {
+		_isLoginApiRequest = false
 		// 对响应错误做些什么
 		uni.showToast({
 			icon: 'error',
 			title: '后端接口响应异常'
 		})
-		// console.log('响应错误后', error)
 		return Promise.reject(error)
 	}
 )
