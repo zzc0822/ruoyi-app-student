@@ -76,9 +76,9 @@
 					<text class="quick-btn-icon">🎯</text>
 					<text class="quick-btn-label">活动报名</text>
 				</view>
-				<view class="quick-btn" @click="goMyActivity">
-					<text class="quick-btn-icon">📋</text>
-					<text class="quick-btn-label">我的活动</text>
+				<view class="quick-btn" @click="goSport">
+					<text class="quick-btn-icon">🏃</text>
+					<text class="quick-btn-label">运动健康</text>
 				</view>
 			</view>
 
@@ -486,7 +486,7 @@
 			loadPendingCount() {
 				userInfoApi.getMyChangeRequests({ approvalStatus: 'pending' }).then(({ data }) => {
 					if (data.code === 200 && data.data) {
-						this.pendingCount = data.data.length;
+						this.pendingCount = (data.data.list || []).length;
 					}
 				});
 			},
@@ -592,6 +592,7 @@
 						uni.showToast({ title: '申请已提交，等待审批', icon: 'success' });
 						this.editShow = false;
 						this.loadPendingCount();
+						this.loadChangeRequests(); // 刷新申请列表
 					} else {
 						uni.showToast({ title: data.msg || '提交失败', icon: 'none' });
 					}
@@ -603,11 +604,15 @@
 			// 加载变更申请列表
 			loadChangeRequests() {
 				userInfoApi.getMyChangeRequests({}).then(({ data }) => {
-					if (data.code === 200) {
-						this.changeRequests = data.data || [];
+					console.log('变更申请接口返回:', data);
+					if (data.code === 200 && data.data) {
+						this.changeRequests = data.data.list || [];
+						console.log('changeRequests 赋值后:', this.changeRequests);
 						this.pendingCount = this.changeRequests.filter(r => r.approvalStatus === 'pending').length;
 					}
-				}).catch(() => {});
+				}).catch((err) => {
+					console.error('加载变更申请失败:', err);
+				});
 			},
 			// 查看变更申请（切换tab）
 			showChangeRequests() {
@@ -713,6 +718,9 @@
 			},
 			goMyActivity() {
 				uni.navigateTo({ url: '/pages/activity/my' });
+			},
+			goSport() {
+				uni.navigateTo({ url: '/pages/sport/index' });
 			},
 		}
 	}

@@ -116,10 +116,12 @@ export default {
 			this.loading = true
 			try {
 				const res = await userInfoApi.getMyStats()
-				const data = res.data || {}
-				this.stats = data.statistics || data
-				this.weights = data.weights || null
-				this.rules = data.rules || []
+				const resData = res.data || {}
+				if (resData.code === 200 && resData.data) {
+					this.stats = resData.data.statistics || resData.data
+					this.weights = resData.data.weights || null
+					this.rules = resData.data.rules || []
+				}
 			} catch (e) {
 				uni.showToast({ title: '加载失败', icon: 'none' })
 			} finally {

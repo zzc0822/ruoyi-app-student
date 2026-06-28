@@ -1,16 +1,21 @@
 {
-	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
-		/** -----index----- */
-		{
-			"path": "pages/index/tab",
-			"style": {
-				"navigationBarTitleText": "campus"
-			}
-		},
+	"pages": [
 		{
 			"path": "pages/index/index",
 			"style": {
 				"navigationBarTitleText": "首页"
+			}
+		},
+		{
+			"path": "pages/me/me",
+			"style": {
+				"navigationBarTitleText": "我的"
+			}
+		},
+		{
+			"path": "pages/index/tab",
+			"style": {
+				"navigationBarTitleText": "campus"
 			}
 		},
 		{
@@ -31,13 +36,6 @@
 			"path": "pages/login/accountLogin",
 			"style": {
 				"navigationBarTitleText": "账号登录"
-			}
-		},
-		/** -----me----- */
-		{
-			"path": "pages/me/me",
-			"style": {
-				"navigationBarTitleText": "我的"
 			}
 		},
 		{
@@ -120,14 +118,71 @@
 				"navigationBarTitleText": "积分明细",
 				"enablePullDownRefresh": true
 			}
+		},
+		/** -----schedule----- */
+		{
+			"path": "pages/schedule/index",
+			"style": {
+				"navigationBarTitleText": "我的课表",
+				"enablePullDownRefresh": false
+			}
+		},
+		/** -----sport----- */
+		{
+			"path": "pages/sport/index",
+			"style": {
+				"navigationBarTitleText": "运动健康",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/sport/ranking",
+			"style": {
+				"navigationBarTitleText": "步数排名",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/sport/checkin",
+			"style": {
+				"navigationBarTitleText": "运动打卡",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/sport/history",
+			"style": {
+				"navigationBarTitleText": "打卡历史",
+				"enablePullDownRefresh": false
+			}
 		}
 
 	],
 	"globalStyle": {
 		"navigationBarTextStyle": "black",
-		"navigationBarTitleText": "uni-app",
-		"navigationBarBackgroundColor": "#F8F8F8",
-		"backgroundColor": "#F8F8F8"
+		"navigationBarTitleText": "智慧学工学生端",
+		"navigationBarBackgroundColor": "#FFFFFF",
+		"backgroundColor": "#F5F6F7"
+	},
+	"tabBar": {
+		"color": "#000000",
+		"selectedColor": "#000000",
+		"backgroundColor": "#ffffff",
+		"borderStyle": "white",
+		"list": [
+			{
+				"pagePath": "pages/index/index",
+				"iconPath": "static/tabBar/home.png",
+				"selectedIconPath": "static/tabBar/home-active.png",
+				"text": "首页"
+			},
+			{
+				"pagePath": "pages/me/me",
+				"iconPath": "static/tabBar/me.png",
+				"selectedIconPath": "static/tabBar/me-active.png",
+				"text": "我的"
+			}
+		]
 	},
 	"uniIdRouter": {},
 	"easycom": {

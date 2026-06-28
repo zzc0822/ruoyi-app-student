@@ -68,9 +68,10 @@
 									v-for="(img, imgIdx) in item.leaveAttachmentList"
 									:key="imgIdx"
 									class="attach-img"
-									:src="img.filePath"
+									:src="getAttachmentUrl(img.filePath)"
 									mode="aspectFill"
-									@click.stop="previewAttachment(imgIdx, item.leaveAttachmentList)"></image>
+									@click.stop="previewAttachment(imgIdx, item.leaveAttachmentList)"
+									@error="onImageError"></image>
 							</view>
 						</view>
 						<view class="info-row">
@@ -379,6 +380,16 @@ export default {
 				this.loadMyStudentInfo()
 			}
 		},
+		// 获取佐证材料完整 URL
+		getAttachmentUrl(filePath) {
+			if (!filePath) return ''
+			if (filePath.startsWith('http')) return filePath
+			return config.baseURL + '/profile' + filePath
+		},
+		// 图片加载失败处理
+		onImageError(e) {
+			console.warn('佐证图片加载失败:', e)
+		},
 		// 获取请假扣分提示
 		fetchScoreHint() {
 			if (!this.form.startTime || !this.form.endTime || this.leaveDaysCalc <= 0) {
@@ -647,7 +658,10 @@ export default {
 		},
 		// 预览列表项佐证图片
 		previewAttachment(idx, list) {
-			const urls = (list || []).map(a => a.filePath).filter(Boolean)
+			const urls = (list || []).map(a => {
+				if (!a.filePath) return ''
+				return a.filePath.startsWith('http') ? a.filePath : config.baseURL + '/profile' + a.filePath
+			}).filter(Boolean)
 			if (!urls.length) return
 			uni.previewImage({
 				current: idx,

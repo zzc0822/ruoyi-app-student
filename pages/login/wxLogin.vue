@@ -50,7 +50,7 @@
 		onLoad() {
 			// 已登录直接回首页
 			if (getToken()) {
-				uni.reLaunch({ url: '/pages/index/tab' });
+				uni.switchTab({ url: '/pages/index/index' });
 				return;
 			}
 			// 先尝试 openid 静默登录
@@ -71,10 +71,10 @@
 								// openid 已绑定，直接登录成功
 								setToken(token);
 								console.log('[静默登录] 成功，准备跳转首页');
-								uni.reLaunch({
-									url: '/pages/index/tab',
+								uni.switchTab({
+									url: '/pages/index/index',
 									fail: (err) => {
-										console.error('[静默登录] reLaunch失败', err);
+										console.error('[静默登录] switchTab失败', err);
 										this.errorMsg = '跳转首页失败：' + (err && err.errMsg ? err.errMsg : JSON.stringify(err));
 									}
 								});
@@ -122,10 +122,10 @@
 							if (data.code === 200 && token) {
 								setToken(token);
 								console.log('[一键登录] 成功，准备跳转首页');
-								uni.reLaunch({
-									url: '/pages/index/tab',
+								uni.switchTab({
+									url: '/pages/index/index',
 									fail: (err) => {
-										console.error('[一键登录] reLaunch失败', err);
+										console.error('[一键登录] switchTab失败', err);
 										uni.showToast({ title: '跳转首页失败', icon: 'none' });
 									}
 								});

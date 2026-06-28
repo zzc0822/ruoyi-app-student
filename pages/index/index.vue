@@ -1,17 +1,120 @@
 <template>
-	<view>
-		<view v-if="categoryList!=null">
-			<u-sticky bgColor="#fff">
-				<u-tabs :list="categoryList" keyName="categoryName" @click="clickTabs"></u-tabs>
-			</u-sticky>
+	<view class="home-container">
+		<!-- 顶部欢迎区域 -->
+		<view class="welcome-section">
+			<view class="welcome-header">
+				<view class="welcome-text">
+					<text class="greeting">你好，{{ studentName || '同学' }} 👋</text>
+					<text class="sub-text">开启今天的学习之旅</text>
+				</view>
+			</view>
+			<view class="date-card">
+				<text class="date-text">{{ currentDate }}</text>
+			</view>
 		</view>
 
-		<view class="index-bg">
+		<!-- 功能列表 - 2行网格布局 -->
+		<view class="function-section">
+			<view class="section-header">
+				<text class="section-title">快捷功能</text>
+			</view>
+			<view class="function-grid">
+				<view class="function-item" @click="navigateTo('/pages/schedule/index')">
+					<view class="function-icon schedule-icon">
+						<u-icon name="calendar" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">我的课表</text>
+					<text class="function-desc">查看课程安排</text>
+				</view>
+				
+				<view class="function-item" @click="navigateTo('/pages/leave/index')">
+					<view class="function-icon leave-icon">
+						<u-icon name="edit-pen" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">我的请假</text>
+					<text class="function-desc">在线提交申请</text>
+				</view>
+				
+				<view class="function-item" @click="navigateTo('/pages/activity/index')">
+					<view class="function-icon activity-icon">
+						<u-icon name="star" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">活动报名</text>
+					<text class="function-desc">精彩活动不错过</text>
+				</view>
+				
+				<view class="function-item" @click="navigateTo('/pages/attendance/index')">
+					<view class="function-icon attendance-icon">
+						<u-icon name="checkmark-circle" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">出勤积分</text>
+					<text class="function-desc">查看考勤记录</text>
+				</view>
+				
+				<view class="function-item" @click="navigateTo('/pages/score/record')">
+					<view class="function-icon score-icon">
+						<u-icon name="pie-chart" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">积分明细</text>
+					<text class="function-desc">积分变动详情</text>
+				</view>
+				
+				<view class="function-item" @click="navigateTo('/pages/sport/index')">
+					<view class="function-icon sport-icon">
+						<u-icon name="run" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">运动健康</text>
+					<text class="function-desc">步数打卡排名</text>
+				</view>
+			</view>
+		</view>
 
-			<u-loading-page :loading="loading"></u-loading-page>
-			<view class="campus-main">
-				<view class="woo-box-flex">
-					<!-- 消息盒子 -->
+		<!-- 今日课表预览 -->
+		<view class="today-schedule-preview" v-if="todayScheduleList.length > 0">
+			<view class="section-header">
+				<text class="section-title">今日课程</text>
+				<view class="view-all" @click="navigateTo('/pages/schedule/index')">
+					<text class="view-all-text">查看全部</text>
+					<u-icon name="arrow-right" size="14" color="#667eea"></u-icon>
+				</view>
+			</view>
+			<view class="schedule-list">
+				<view 
+					v-for="(schedule, index) in todayScheduleList.slice(0, 3)" 
+					:key="index"
+					class="schedule-item"
+				>
+					<view class="schedule-time">
+						<text class="time-text">{{ schedule.startTime }}</text>
+						<text class="section-text">{{ schedule.startSection }}-{{ schedule.endSection }}节</text>
+					</view>
+					<view class="schedule-content">
+						<text class="course-name">{{ schedule.courseName }}</text>
+						<text class="location-text">
+							<u-icon name="map" size="12" color="#999"></u-icon>
+							{{ schedule.classroom }}
+						</text>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<!-- 校园墙内容 -->
+		<view class="campus-wall">
+			<view class="section-header">
+				<text class="section-title">校园动态</text>
+				<text class="section-more">查看全部</text>
+			</view>
+			
+			<view v-if="categoryList!=null">
+				<u-sticky bgColor="#fff">
+					<u-tabs :list="categoryList" keyName="categoryName" @click="clickTabs"></u-tabs>
+				</u-sticky>
+			</view>
+
+			<view class="wall-content">
+				<u-loading-page :loading="loading"></u-loading-page>
+				<view class="content-list">
 					<view class="content-t">
 						<scroll-list ref="contentObj" :option="option" @load="getContent" @refresh="refresh">
 							<view class="content-box" v-for="(item, key) in contentObj" :key="key">
@@ -21,7 +124,6 @@
 						</scroll-list>
 					</view>
 				</view>
-
 			</view>
 		</view>
 
@@ -30,13 +132,14 @@
 			<ArrowDown :contentObj="popupData.contentObj" :show="popupData.show" :time="popupData.time"></ArrowDown>
 		</view>
 	</view>
-
 </template>
 
 <script>
 	//api
 	import touristApi from "@/api/tourist";
 	import operateApi from "@/api/operate";
+	import { getTodaySchedule } from '@/api/schedule'
+	import userInfoApi from '@/api/userInfo.js'
 
 	import {
 		isLogin
@@ -56,6 +159,12 @@
 		},
 		data() {
 			return {
+				// 当前日期
+				currentDate: '',
+				// 学生姓名
+				studentName: '',
+				// 今日课表预览
+				todayScheduleList: [],
 				option: {
 					page: 1,
 					size: 5,
@@ -84,12 +193,25 @@
 
 		//创建的时候自动调用
 		onReady() {
+			// 设置当前日期
+			const now = new Date()
+			const year = now.getFullYear()
+			const month = String(now.getMonth() + 1).padStart(2, '0')
+			const day = String(now.getDate()).padStart(2, '0')
+			const weekDays = ['星期日', '星期一', '星期二', '星期三', '星期四', '星期五', '星期六']
+			const weekDay = weekDays[now.getDay()]
+			this.currentDate = `${year}年${month}月${day}日 ${weekDay}`
+				
 			if (isLogin()) {
 				// #ifdef  MP-WEIXIN
 				// wxampLogin();
 				// #endif
+				// 加载今日课表预览
+				this.loadTodaySchedule()
+				// 加载学生信息
+				this.loadStudentInfo()
 			}
-
+		
 			this.getAllCategorys();
 			// this.getContent();
 		},
@@ -98,7 +220,43 @@
 			// this.contentVo.categoryId = 0;
 		},
 		methods: {
-
+			// 加载学生信息
+			async loadStudentInfo() {
+				try {
+					const { data } = await userInfoApi.getMyStudentInfo()
+					if (data.code === 200 && data.data) {
+						this.studentName = data.data.studentName || data.data.xm || ''
+					}
+				} catch (error) {
+					console.error('加载学生信息失败:', error)
+				}
+			},
+			// 导航到指定页面
+			navigateTo(url) {
+				// tabBar 页面使用 switchTab，普通页面使用 navigateTo
+				const tabBarPages = ['/pages/index/index', '/pages/me/me'];
+				if (tabBarPages.includes(url)) {
+					uni.switchTab({ url });
+				} else {
+					uni.navigateTo({ url });
+				}
+			},
+			
+			// 加载今日课表预览
+			async loadTodaySchedule() {
+				try {
+					const now = new Date()
+					const weekday = now.getDay() === 0 ? 7 : now.getDay()
+					
+					const res = await getTodaySchedule({ weekday })
+					if (res.data && res.data.code === 200) {
+						this.todayScheduleList = res.data.data || []
+					}
+				} catch (error) {
+					console.error('加载今日课表失败:', error)
+				}
+			},
+				
 			clickTabs(item) {
 				this.contentVo.categoryId = item.categoryId;
 				this.refresh();
@@ -182,47 +340,278 @@
 	};
 </script>
 
-<style>
-	.index-bg {
-		/* box-shadow: 0 25px 45px rgb(0 0 0 / 10%); */
-		/* border: 1px solid rgba(255, 255, 255, 0.5); */
-		border-right: 1px solid rgba(255, 255, 255, 0.2);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 10px;
-		margin: auto;
-	}
+<style scoped>
+.home-container {
+	min-height: 100vh;
+	background: #f5f6f7;
+}
 
-	.content-box {
-		/* box-shadow: 0 10px 12px 0 rgba(0, 0, 0, 0.2); */
-		margin: 0 0 25px 0;
-		padding: 20px 20px 0;
-		background-color: #fff;
-		box-shadow: 0px 0px 25px rgb(0 0 0 / 10%);
-		border: 1px solid rgba(255, 255, 255, 0.5);
-		border-right: 1px solid rgba(255, 255, 255, 0.2);
-		border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-		border-radius: 10px;
-	}
+.welcome-section {
+	background: linear-gradient(135deg, #2979ff, #1a5cd8);
+	padding: 120rpx 40rpx 100rpx;
+	position: relative;
+	overflow: hidden;
+}
 
-	.tag-group {
-		text-align: center;
-	}
+.welcome-section::before {
+	content: '';
+	position: absolute;
+	top: -50%;
+	right: -20%;
+	width: 400rpx;
+	height: 400rpx;
+	background: rgba(255, 255, 255, 0.1);
+	border-radius: 50%;
+}
 
-	/* 分页 */
-	.fenye {
-		width: 100%;
-		margin: 0 auto;
-		text-align: center;
-	}
+.welcome-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	position: relative;
+	z-index: 1;
+}
 
-	/* 标签 */
-	.clickable {
-		margin-top: 5px;
-		cursor: pointer;
-	}
+.greeting {
+	font-size: 48rpx;
+	font-weight: bold;
+	color: #fff;
+	display: block;
+	margin-bottom: 12rpx;
+}
 
-	.content-t {
-		width: 100%;
-		margin: 20px 0 0 0;
-	}
+.sub-text {
+	font-size: 24rpx;
+	color: rgba(255, 255, 255, 0.9);
+	display: block;
+}
+
+.date-card {
+	margin-top: 30rpx;
+	background: rgba(255, 255, 255, 0.2);
+	backdrop-filter: blur(10rpx);
+	
+	padding: 20rpx 30rpx;
+	display: inline-block;
+	position: relative;
+	z-index: 1;
+}
+
+.date-text {
+	font-size: 26rpx;
+	color: #fff;
+	font-weight: 500;
+}
+
+.function-section {
+	background: #fff;
+	margin: 0 24rpx 20rpx;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	
+}
+
+.section-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20rpx;
+}
+
+.section-title {
+	font-size: 30rpx;
+	font-weight: bold;
+	color: #333;
+}
+
+.section-more {
+	font-size: 24rpx;
+	color: #999;
+}
+
+.function-grid {
+	display: grid;
+	width: 25%;
+	
+}
+
+.function-item {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 16rpx 0;
+	
+	transition: all 0.3s ease;
+}
+
+.function-item:active {
+	
+	transform: scale(0.95);
+}
+
+.function-icon {
+	width: 96rpx;
+	height: 96rpx;
+	border-radius: 20rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	box-shadow: 0 6rpx 16rpx rgba(0, 0, 0, 0.15);
+	margin-bottom: 12rpx;
+}
+
+.schedule-icon {
+	background: linear-gradient(135deg, #2979ff 0%, #5ba3ff 100%);
+}
+
+.leave-icon {
+	background: linear-gradient(135deg, #f3a044 0%, #ffc870 100%);
+}
+
+.activity-icon {
+	background: linear-gradient(135deg, #18bc37 0%, #4cd964 100%);
+}
+
+.attendance-icon {
+	background: linear-gradient(135deg, #e43d33 0%, #ff6b6b 100%);
+}
+
+.score-icon {
+	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.sport-icon {
+	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.function-name {
+	font-size: 24rpx;
+	color: #333;
+	
+	text-align: center;
+	
+}
+
+.function-desc {
+	display: none;
+	font-size: 22rpx;
+	color: #999;
+	text-align: center;
+}
+
+.today-schedule-preview {
+	background: #fff;
+	margin: 0 30rpx 30rpx;
+	border-radius: 20rpx;
+	padding: 30rpx;
+	
+}
+
+.view-all {
+	display: flex;
+	align-items: center;
+	gap: 4rpx;
+}
+
+.view-all-text {
+	font-size: 24rpx;
+	color: #667eea;
+}
+
+.schedule-list {
+	display: flex;
+	flex-direction: column;
+	gap: 24rpx;
+}
+
+.schedule-item {
+	display: flex;
+	gap: 24rpx;
+	padding: 24rpx;
+	background: linear-gradient(135deg, #f5f7fa 0%, #fff 100%);
+	
+	border: 2rpx solid #e5e7eb;
+}
+
+.schedule-time {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	min-width: 96rpx;
+	padding: 16rpx;
+	background: linear-gradient(135deg, #2979ff 0%, #5ba3ff 100%);
+	border-radius: 12rpx;
+}
+
+.time-text {
+	font-size: 26rpx;
+	color: #fff;
+	font-weight: bold;
+	margin-bottom: 4rpx;
+}
+
+.section-text {
+	font-size: 20rpx;
+	color: rgba(255, 255, 255, 0.9);
+}
+
+.schedule-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 12rpx;
+}
+
+.course-name {
+	font-size: 24rpx;
+	color: #333;
+	font-weight: bold;
+}
+
+.location-text {
+	display: flex;
+	align-items: center;
+	gap: 6rpx;
+	font-size: 24rpx;
+	color: #666;
+}
+
+.campus-wall {
+	background: #fff;
+	margin: 0 30rpx 30rpx;
+	border-radius: 20rpx;
+	overflow: hidden;
+	
+}
+
+.wall-content {
+	padding: 16rpx 0;
+}
+
+.content-list {
+	width: 100%;
+}
+
+.content-box {
+	margin: 0 0 25rpx 0;
+	padding: 30rpx;
+	background-color: #fff;
+	box-shadow: 0 4rpx 12rpx rgba(0, 0, 0, 0.05);
+	
+	border: 1rpx solid #f0f0f0;
+}
+
+.tag-group {
+	text-align: center;
+}
+
+.clickable {
+	margin-top: 10rpx;
+	cursor: pointer;
+}
+
+.content-t {
+	width: 100%;
+}
 </style>

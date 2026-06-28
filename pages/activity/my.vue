@@ -79,13 +79,13 @@
 				this.loading = true
 				this.loadStatus = 'loading'
 				listMyActivities(this.queryParam).then(res => {
-					const rows = res.rows || []
+					const rows = (res.data && res.data.rows) || []
 					if (this.queryParam.pageNum === 1) {
 						this.list = rows
 					} else {
 						this.list = [...this.list, ...rows]
 					}
-					this.total = res.total || 0
+					this.total = (res.data && res.data.total) || 0
 					if (this.list.length >= this.total) {
 						this.loadStatus = 'noMore'
 					} else {
