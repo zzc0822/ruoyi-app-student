@@ -431,8 +431,8 @@
 
 .function-grid {
 	display: grid;
-	width: 25%;
-	
+	grid-template-columns: repeat(4, 1fr);
+	gap: 20rpx;
 }
 
 .function-item {
