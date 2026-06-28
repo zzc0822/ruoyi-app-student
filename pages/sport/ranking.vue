@@ -21,8 +21,8 @@
         v-for="(item, index) in rankingList" 
         :key="item.userId"
       >
-        <view class="rank-number" :class="getRankClass(index)">
-          <text class="rank-text">{{ getRankText(index) }}</text>
+        <view class="rank-number" :class="[index === 0 ? 'rank-gold' : index === 1 ? 'rank-silver' : index === 2 ? 'rank-bronze' : '']">
+          <text class="rank-text">{{ index === 0 ? '🥇' : index === 1 ? '🥈' : index === 2 ? '🥉' : (index + 1) }}</text>
         </view>
         <view class="rank-avatar">
           <image class="avatar-img" :src="item.avatar || '/static/images/default-avatar.png'" mode="aspectFill"></image>

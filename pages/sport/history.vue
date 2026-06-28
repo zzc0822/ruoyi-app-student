@@ -9,11 +9,11 @@
         @click="viewDetail(item)"
       >
         <view class="item-header">
-          <view class="sport-type-badge" :class="getTypeClass(item.sportType)">
-            <text class="badge-emoji">{{ getTypeEmoji(item.sportType) }}</text>
+          <view class="sport-type-badge" :class="[item.sportType === 'run' ? 'type-run' : item.sportType === 'walk' ? 'type-walk' : item.sportType === 'cycle' ? 'type-cycle' : '']">
+            <text class="badge-emoji">{{ item.sportType === 'run' ? '🏃' : item.sportType === 'walk' ? '🚶' : item.sportType === 'cycle' ? '🚴' : '❓' }}</text>
           </view>
           <view class="item-info">
-            <text class="sport-type-text">{{ getTypeText(item.sportType) }}</text>
+            <text class="sport-type-text">{{ item.sportType === 'run' ? '跑步' : item.sportType === 'walk' ? '步行' : item.sportType === 'cycle' ? '骑行' : item.sportType }}</text>
             <text class="sport-time">{{ formatTime(item.startTime) }}</text>
           </view>
         </view>
@@ -57,7 +57,7 @@
         <view class="detail-content">
           <view class="detail-row">
             <text class="detail-label">运动类型</text>
-            <text class="detail-value">{{ getTypeText(currentDetail.sportType) }}</text>
+            <text class="detail-value">{{ currentDetail.sportType === 'run' ? '跑步' : currentDetail.sportType === 'walk' ? '步行' : currentDetail.sportType === 'cycle' ? '骑行' : currentDetail.sportType }}</text>
           </view>
           <view class="detail-row">
             <text class="detail-label">开始时间</text>
