@@ -72,12 +72,20 @@ export default {
       currentDate: '',
       todaySteps: 0,
       progressPercent: 0,
-      recentCheckins: []
+      recentCheckins: [],
+      silentSyncTimer: null  // 静默同步定时器
     }
   },
   onShow() {
     this.loadTodaySteps()
     this.loadRecentCheckins()
+    this.startSilentSync()  // 启动静默同步
+  },
+  onHide() {
+    this.stopSilentSync()  // 停止静默同步
+  },
+  onUnload() {
+    this.stopSilentSync()  // 清理定时器
   },
   methods: {
     // 加载今日步数
@@ -217,6 +225,71 @@ export default {
       const hours = Math.floor(minutes / 60)
       const mins = minutes % 60
       return `${hours}小时${mins}分钟`
+    },
+
+    // 启动静默同步（每天晚上 22:05）
+    startSilentSync() {
+      // #ifdef MP-WEIXIN
+      // 计算到下一个 22:05 的毫秒数
+      const now = new Date()
+      const target = new Date(now)
+      target.setHours(22, 5, 0, 0)
+      
+      // 如果今天 22:05 已过，设置为明天 22:05
+      if (target <= now) {
+        target.setDate(target.getDate() + 1)
+      }
+      
+      const delay = target.getTime() - now.getTime()
+      
+      console.log(`静默同步将在 ${delay / 1000 / 60} 分钟后执行（${target.toLocaleString()}）`)
+      
+      // 设置定时器
+      this.silentSyncTimer = setTimeout(() => {
+        this.executeSilentSync()
+        // 递归设置下一个 22:05 的定时器
+        this.startSilentSync()
+      }, delay)
+      // #endif
+    },
+
+    // 停止静默同步
+    stopSilentSync() {
+      if (this.silentSyncTimer) {
+        clearTimeout(this.silentSyncTimer)
+        this.silentSyncTimer = null
+        console.log('静默同步定时器已清理')
+      }
+    },
+
+    // 执行静默同步
+    executeSilentSync() {
+      // #ifdef MP-WEIXIN
+      console.log('开始静默同步微信运动数据...')
+      
+      // 静默获取微信运动数据（不显示 loading）
+      wx.getWeRunData({
+        success: (res) => {
+          sportApi.syncSteps({
+            encryptedData: res.encryptedData,
+            iv: res.iv,
+            date: this.currentDate
+          }).then(response => {
+            if (response.data && response.data.code === 200) {
+              console.log('静默同步成功:', response.data.data)
+              this.loadTodaySteps()  // 刷新步数显示
+            } else {
+              console.warn('静默同步失败:', response.data.msg)
+            }
+          }).catch(err => {
+            console.error('静默同步请求失败:', err)
+          })
+        },
+        fail: (err) => {
+          console.error('获取微信运动数据失败:', err)
+        }
+      })
+      // #endif
     }
   }
 }
