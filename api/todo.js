@@ -1,0 +1,42 @@
+import request from '@/utils/request'
+
+// 查询我的待办列表
+export function listMyTodo() {
+  return request({
+    url: '/api/todo/list',
+    method: 'get'
+  })
+}
+
+// 获取未读待办数量
+export function getUnreadCount() {
+  return request({
+    url: '/api/todo/unreadCount',
+    method: 'get'
+  })
+}
+
+// 标记已读
+export function markRead(id) {
+  return request({
+    url: '/api/todo/read/' + id,
+    method: 'post'
+  })
+}
+
+// 新增待办
+export function addTodo(data) {
+  return request({
+    url: '/api/todo',
+    method: 'post',
+    data: data
+  })
+}
+
+// 删除待办
+export function delTodo(id) {
+  return request({
+    url: '/api/todo/delete/' + id,
+    method: 'post'
+  })
+}

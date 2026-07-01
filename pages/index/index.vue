@@ -72,7 +72,7 @@
 		<!-- 今日课表预览 -->
 		<view class="today-schedule-preview" v-if="todayScheduleList.length > 0">
 			<view class="section-header">
-				<text class="section-title">今日课程</text>
+				<text class="section-title">今日课程 <text class="week-badge" v-if="currentWeek">第{{ currentWeek }}周</text></text>
 				<view class="view-all" @click="navigateTo('/pages/schedule/index')">
 					<text class="view-all-text">查看全部</text>
 					<u-icon name="arrow-right" size="14" color="#667eea"></u-icon>
@@ -85,15 +85,32 @@
 					class="schedule-item"
 				>
 					<view class="schedule-time">
-						<text class="time-text">{{ schedule.startTime }}</text>
+						<text class="time-text">{{ getSectionTime(schedule.startSection) }}</text>
 						<text class="section-text">{{ schedule.startSection }}-{{ schedule.endSection }}节</text>
 					</view>
 					<view class="schedule-content">
-						<text class="course-name">{{ schedule.courseName }}</text>
+						<text class="course-name">{{ schedule.courseName || '未命名课程' }}</text>
 						<text class="location-text">
 							<u-icon name="map" size="12" color="#999"></u-icon>
-							{{ schedule.classroom }}
+							{{ schedule.classroom || '未安排教室' }}
 						</text>
+					</view>
+				</view>
+			</view>
+		</view>
+
+		<!-- 今日待办 -->
+		<view class="today-todo-section" v-if="todayTodoList.length > 0">
+			<view class="section-header">
+				<text class="section-title">📝 今日待办</text>
+				<text class="section-more" @click="navigateTo('/pages/todo/index')">全部 ({{ todayTodoList.length }})</text>
+			</view>
+			<view class="todo-list">
+				<view class="todo-item" v-for="(item, index) in todayTodoList.slice(0, 5)" :key="index">
+					<view :class="['todo-dot', 'dot-' + (item.urgency || 'normal')]"></view>
+					<view class="todo-content">
+						<text class="todo-text">{{ item.title }}</text>
+						<text class="todo-type" v-if="item.todoType">{{ formatTodoType(item.todoType) }}</text>
 					</view>
 				</view>
 			</view>
@@ -138,7 +155,8 @@
 	//api
 	import touristApi from "@/api/tourist";
 	import operateApi from "@/api/operate";
-	import { getTodaySchedule } from '@/api/schedule'
+	import { getMySchedule, getCurrentInfo } from '@/api/schedule'
+	import { listMyTodo } from '@/api/todo'
 	import userInfoApi from '@/api/userInfo.js'
 
 	import {
@@ -163,8 +181,12 @@
 				currentDate: '',
 				// 学生姓名
 				studentName: '',
+				// 当前周次
+				currentWeek: null,
 				// 今日课表预览
 				todayScheduleList: [],
+				// 今日待办
+				todayTodoList: [],
 				option: {
 					page: 1,
 					size: 5,
@@ -206,10 +228,14 @@
 				// #ifdef  MP-WEIXIN
 				// wxampLogin();
 				// #endif
+				// 加载当前学期和周次
+				this.loadCurrentInfo()
 				// 加载今日课表预览
 				this.loadTodaySchedule()
 				// 加载学生信息
 				this.loadStudentInfo()
+				// 加载今日待办
+				this.loadTodayTodo()
 			}
 		
 			this.getAllCategorys();
@@ -242,19 +268,88 @@
 				}
 			},
 			
+			// 加载当前学期和周次信息
+			async loadCurrentInfo() {
+				try {
+					const res = await getCurrentInfo()
+					if (res.data && res.data.code === 200) {
+						const info = res.data.data
+						this.currentWeek = info.currentWeek || null
+						this.currentSemesterId = info.semesterId || ''
+						this.currentSemesterName = info.semesterName || ''
+					}
+				} catch (error) {
+					// 静默处理
+				}
+			},
 			// 加载今日课表预览
 			async loadTodaySchedule() {
 				try {
 					const now = new Date()
 					const weekday = now.getDay() === 0 ? 7 : now.getDay()
 					
-					const res = await getTodaySchedule({ weekday })
+					// 先获取学期和周次信息
+					let semester = ''
+					let weekNumber = null
+					try {
+						const infoRes = await getCurrentInfo()
+						if (infoRes.data && infoRes.data.code === 200) {
+							const info = infoRes.data.data
+							semester = info.semesterId || ''
+							weekNumber = info.currentWeek || null
+						}
+					} catch (e) {
+						// 静默处理
+					}
+					
+					// 使用个人课表接口查询今日课程
+					const res = await getMySchedule({ weekday, semester, weekNumber })
 					if (res.data && res.data.code === 200) {
 						this.todayScheduleList = res.data.data || []
 					}
 				} catch (error) {
-					console.error('加载今日课表失败:', error)
+					// 认证失败时静默处理
 				}
+			},
+			// 加载今日待办
+			async loadTodayTodo() {
+				try {
+					const res = await listMyTodo()
+					if (res.data && res.data.code === 200) {
+						const todos = res.data.data || []
+						this.todayTodoList = todos.filter(t => 
+							t.status === '0' && (t.urgency === 'today' || t.urgency === 'overdue' || t.urgency === 'tomorrow')
+						)
+					}
+				} catch (error) {
+					// 认证失败时静默处理
+				}
+			},
+			// 格式化待办类型
+			formatTodoType(type) {
+				const map = {
+					schedule: '日程', meeting: '会议', class_meeting: '班会',
+					leave: '请假', talk_disciplinary: '违纪谈话', talk_daily: '日常谈心',
+					classcheck_talk: '查课谈话', classcheck_confirm: '抽查确认'
+				}
+				return map[type] || type || '待办'
+			},
+			
+			// 根据节次获取时间
+			getSectionTime(startSection) {
+				const timeMap = {
+					1: '08:00',
+					2: '08:50',
+					3: '10:00',
+					4: '10:50',
+					5: '14:00',
+					6: '14:50',
+					7: '16:00',
+					8: '16:50',
+					9: '19:00',
+					10: '19:50'
+				}
+				return timeMap[startSection] || '08:00'
 			},
 				
 			clickTabs(item) {
@@ -267,12 +362,13 @@
 					.getCategoryList()
 					.then((response) => {
 						this.categoryList = [];
-						for (let item of response.data.data) {
-
-							if (item.parentId != "0" || item.type == "Y") {
-								this.categoryList.push(item);
+						const categories = response.data.data
+						if (Array.isArray(categories)) {
+							for (let item of categories) {
+								if (item.parentId != "0" || item.type == "Y") {
+									this.categoryList.push(item);
+								}
 							}
-
 						}
 					})
 					.catch();
@@ -575,6 +671,79 @@
 	gap: 6rpx;
 	font-size: 24rpx;
 	color: #666;
+}
+
+/* 周次角标 */
+.week-badge {
+	font-size: 22rpx;
+	color: #667eea;
+	background: rgba(102, 126, 234, 0.1);
+	padding: 4rpx 12rpx;
+	border-radius: 10rpx;
+	margin-left: 12rpx;
+	font-weight: normal;
+}
+
+/* 今日待办 */
+.today-todo-section {
+	background: #fff;
+	margin: 0 30rpx 30rpx;
+	border-radius: 20rpx;
+	padding: 30rpx;
+}
+
+.todo-list {
+	display: flex;
+	flex-direction: column;
+	gap: 20rpx;
+}
+
+.todo-item {
+	display: flex;
+	align-items: center;
+	gap: 16rpx;
+	padding: 16rpx 20rpx;
+	background: linear-gradient(135deg, #f5f7fa 0%, #fff 100%);
+	border-radius: 12rpx;
+	border: 1rpx solid #eef0f3;
+}
+
+.todo-dot {
+	width: 14rpx;
+	height: 14rpx;
+	border-radius: 50%;
+	flex-shrink: 0;
+}
+
+.dot-today { background: #e43d33; }
+.dot-overdue { background: #ff4d4f; }
+.dot-tomorrow { background: #f3a044; }
+.dot-normal { background: #2979ff; }
+
+.todo-content {
+	flex: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12rpx;
+}
+
+.todo-text {
+	font-size: 26rpx;
+	color: #333;
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.todo-type {
+	font-size: 20rpx;
+	color: #667eea;
+	background: rgba(102, 126, 234, 0.08);
+	padding: 4rpx 12rpx;
+	border-radius: 8rpx;
+	flex-shrink: 0;
 }
 
 .campus-wall {

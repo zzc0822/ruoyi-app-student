@@ -19,6 +19,8 @@ const instance = ajax.create({
 
 // 登录接口标记：登录API调用时设为true，响应拦截器据此跳过401拦截
 let _isLoginApiRequest = false;
+// 静默请求标记：设为true时，响应拦截器不弹toast
+let _isSilentRequest = false;
 
 // 添加请求拦截器
 instance.interceptors.request.use(
@@ -30,6 +32,8 @@ instance.interceptors.request.use(
 		}
 		// 标记登录类请求，响应拦截器不拦截其401
 		_isLoginApiRequest = config.header['isLoginApi'] === true
+		// 标记静默请求，响应拦截器不弹toast
+		_isSilentRequest = config.header['isSilent'] === true
 		return config
 	},
 	error => {
@@ -49,7 +53,9 @@ instance.interceptors.response.use(
 		const code = response.data.code || 200;
 		const msg = response.data.msg
 		const wasLoginApi = _isLoginApiRequest
+		const wasSilent = _isSilentRequest
 		_isLoginApiRequest = false
+		_isSilentRequest = false
 		// 登录类接口的响应全部直接返回，由调用方自行处理（不拦截401/40004/其他错误码）
 		if (wasLoginApi) {
 			return response
@@ -66,7 +72,7 @@ instance.interceptors.response.use(
 			}
 			return Promise.reject(msg || "未登录")
 		} else if (code == 500) {
-			toast(msg)
+			if (!wasSilent) toast(msg)
 			return Promise.reject(msg)
 		} else if (code == 40004) {
 			// 教师账号拦截：用showModal，确保用户能看清
@@ -78,7 +84,7 @@ instance.interceptors.response.use(
 			});
 			return Promise.reject(msg)
 		} else if (code !== 200) {
-			toast(msg)
+			if (!wasSilent) toast(msg)
 			return Promise.reject(msg)
 		}
 		return response

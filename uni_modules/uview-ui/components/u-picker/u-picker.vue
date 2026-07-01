@@ -1,6 +1,7 @@
 <template>
 	<u-popup
 		:show="show"
+		mode="bottom"
 		@close="closeHandler"
 	>
 		<view class="u-picker">

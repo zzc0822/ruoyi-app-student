@@ -27,7 +27,10 @@
 			<view v-if="list.length > 0" class="leave-list">
 				<view class="leave-item" v-for="item in list" :key="item.id">
 					<view class="item-header">
-						<text class="leave-type">{{ leaveTypeText(item.leaveType) }}</text>
+						<view class="header-left">
+							<text class="leave-type">{{ leaveTypeText(item.leaveType) }} {{ item.applyNo }}</text>
+							<text class="transport-info" v-if="item.transportType">{{ transportText(item.transportType, item.transportInfo) }}</text>
+						</view>
 						<view :class="['status-tag', 'status-' + item.approvalStatus]">
 							{{ statusText(item.approvalStatus) }}
 						</view>
@@ -37,13 +40,13 @@
 							<text class="info-label">假期时间</text>
 							<text class="info-val">{{ formatDate(item.startTime) }} 至 {{ formatDate(item.endTime) }}</text>
 						</view>
-						<view class="info-row">
-							<text class="info-label">请假天数</text>
-							<text class="info-val">{{ item.leaveDays }} 天</text>
+						<view class="info-row compact-row">
+							<text class="compact-item"><text class="info-label">天数</text> <text class="info-val">{{ item.leaveDays }} 天</text></text>
+							<text class="compact-item"><text class="info-label">原因</text> <text class="info-val reason-text">{{ item.leaveReason || '--' }}</text></text>
 						</view>
-						<view class="info-row">
-							<text class="info-label">请假原因</text>
-							<text class="info-val reason-text">{{ item.leaveReason || '--' }}</text>
+						<view class="info-row" v-if="item.transportType">
+							<text class="info-label">交通</text>
+							<text class="info-val">{{ transportText(item.transportType, item.transportInfo) }}</text>
 						</view>
 						<view class="info-row" v-if="item.approvalRemark">
 							<text class="info-label">审批意见</text>
@@ -380,11 +383,13 @@ export default {
 				this.loadMyStudentInfo()
 			}
 		},
-		// 获取佐证材料完整 URL
+		// 获取佐证材料完整 URL（/profile 在 Nginx 根路径，不在 /prod-api 下）
 		getAttachmentUrl(filePath) {
 			if (!filePath) return ''
 			if (filePath.startsWith('http')) return filePath
-			return config.baseURL + '/profile' + filePath
+			// 从 baseURL 提取域名根路径（去掉 /prod-api）
+			const origin = config.baseURL.replace(/\/prod-api$/, '')
+			return origin + '/profile' + filePath
 		},
 		// 图片加载失败处理
 		onImageError(e) {
@@ -618,6 +623,11 @@ export default {
 			const map = { personal: '事假', sick: '病假', public: '公假', other: '其他' }
 			return map[val] || val || '--'
 		},
+		transportText(type, info) {
+			const map = { train: '火车', plane: '飞机', bus: '汽车', other: '其他' }
+			const name = map[type] || type
+			return info ? `${name}(${info})` : name
+		},
 		statusText(val) {
 			const map = { pending: '待审批', approved: '已批准', rejected: '已拒绝', forward: '转上级' }
 			return map[val] || val || '--'
@@ -658,9 +668,10 @@ export default {
 		},
 		// 预览列表项佐证图片
 		previewAttachment(idx, list) {
+			const origin = config.baseURL.replace(/\/prod-api$/, '')
 			const urls = (list || []).map(a => {
 				if (!a.filePath) return ''
-				return a.filePath.startsWith('http') ? a.filePath : config.baseURL + '/profile' + a.filePath
+				return a.filePath.startsWith('http') ? a.filePath : origin + '/profile' + a.filePath
 			}).filter(Boolean)
 			if (!urls.length) return
 			uni.previewImage({
@@ -691,6 +702,8 @@ export default {
 .leave-item { background: #fff; border-radius: 16rpx; margin-bottom: 16rpx; overflow: hidden; }
 .item-header { display: flex; justify-content: space-between; align-items: center; padding: 20rpx 24rpx 12rpx; border-bottom: 1rpx solid #f5f5f5; }
 .leave-type { font-size: 30rpx; font-weight: bold; color: #333; }
+.header-left { display: flex; align-items: baseline; flex: 1; overflow: hidden; }
+.transport-info { font-size: 22rpx; color: #888; margin-left: 10rpx; flex-shrink: 0; }
 .status-tag { font-size: 22rpx; padding: 6rpx 18rpx; border-radius: 24rpx; }
 .status-pending { background: #fff7e6; color: #fa8c16; }
 .status-approved { background: #f0fff4; color: #52c41a; }
@@ -701,6 +714,10 @@ export default {
 .info-label { color: #999; font-size: 24rpx; width: 150rpx; flex-shrink: 0; }
 .info-val { color: #333; font-size: 24rpx; flex: 1; }
 .reason-text { word-break: break-all; }
+.compact-row { align-items: center; }
+.compact-item { margin-right: 40rpx; display: inline-flex; align-items: baseline; }
+.compact-item .info-label { width: auto; margin-right: 8rpx; }
+.compact-item .info-val { flex: none; }
 .flow-text { color: #4a7cf6; word-break: break-all; }
 .next-approver { color: #fa8c16; word-break: break-all; }
 .score-points { color: #f5222d; font-weight: bold; }

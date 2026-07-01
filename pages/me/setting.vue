@@ -102,16 +102,21 @@
 					content: '确定要解绑微信吗？解绑后需重新绑定才能使用微信登录。',
 					success: (res) => {
 						if (res.confirm) {
-							// 一点击解绑立即清理本地登录态，避免后端延迟或失败导致状态残留
-							removeToken();
-							uni.reLaunch({ url: '/pages/login/wxLogin' });
-							// 异步通知后端解绑，失败仅记录不影响前端状态
+							// 先调后端解绑（此时还有 token），成功后再清本地状态
 							userInfoApi.unbindWx().then(({ data }) => {
-								if (data.code !== 200) {
+								if (data.code === 200) {
+									console.log('[解绑微信] 后端解绑成功');
+								} else {
 									console.warn('[解绑微信] 后端解绑失败：', data.msg);
 								}
+								// 无论后端成功与否，都清理本地登录态并跳转
+								removeToken();
+								uni.reLaunch({ url: '/pages/login/wxLogin' });
 							}).catch((err) => {
 								console.error('[解绑微信] 后端解绑异常：', err);
+								// 异常时也清理本地状态，避免用户卡住
+								removeToken();
+								uni.reLaunch({ url: '/pages/login/wxLogin' });
 							});
 						}
 					}

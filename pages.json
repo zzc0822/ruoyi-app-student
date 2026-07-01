@@ -127,6 +127,14 @@
 				"enablePullDownRefresh": false
 			}
 		},
+		/** -----todo----- */
+		{
+			"path": "pages/todo/index",
+			"style": {
+				"navigationBarTitleText": "我的待办",
+				"enablePullDownRefresh": false
+			}
+		},
 		/** -----sport----- */
 		{
 			"path": "pages/sport/index",

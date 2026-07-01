@@ -121,17 +121,33 @@
       @confirm="onWeekConfirm"
       @cancel="showWeek = false"
     ></u-picker>
+
+    <!-- 今日待办浮层 -->
+    <view class="todo-float" v-if="todayTodoList.length > 0" @click="goTodoPage">
+      <view class="todo-float-header">
+        <text class="todo-float-title">📝 今日待办</text>
+        <text class="todo-float-count">{{ todayTodoList.length }}项</text>
+      </view>
+      <view class="todo-float-list">
+        <view class="todo-float-item" v-for="(item, index) in todayTodoList.slice(0, 3)" :key="index">
+          <view :class="['todo-float-dot', 'dot-' + (item.urgency || 'normal')]"></view>
+          <text class="todo-float-text">{{ item.title }}</text>
+        </view>
+      </view>
+    </view>
   </view>
 </template>
 
 <script>
-import { getMySchedule } from '@/api/schedule'
+import { getMySchedule, getCurrentInfo } from '@/api/schedule'
+import { listMyTodo } from '@/api/todo'
 
 export default {
   data() {
     return {
       weekDays: ['一', '二', '三', '四', '五', '六', '日'],
       currentSemester: '',
+      currentSemesterId: '',
       currentWeek: 1,
       allSchedules: [],
       loading: true,
@@ -141,6 +157,9 @@ export default {
       showWeek: false,
       semesterColumns: [[]],
       weekColumns: [[]],
+
+      // 今日待办
+      todayTodoList: [],
 
       sectionList: [
         { id: 1, label: '1-2', start: 1, end: 2, time: '08:00' },
@@ -163,17 +182,60 @@ export default {
     }
   },
 
-  onLoad() {
-    const date = new Date()
-    this.currentWeek = Math.ceil((date.getDate()) / 7) || 1
-    this.currentSemester = this.semesterList[0]
-    this.semesterColumns = [this.semesterList]
-    const weeks = Array.from({ length: 20 }, (_, i) => `第${i + 1}周`)
-    this.weekColumns = [weeks]
+  async onLoad() {
+    // 从后端获取当前学期和周次（基于校历计算）
+    await this.loadCurrentInfo()
+    // 加载课表
     this.loadSchedule()
+    // 加载今日待办
+    this.loadTodayTodo()
   },
 
   methods: {
+    // 加载当前学期和周次信息
+    async loadCurrentInfo() {
+      try {
+        const res = await getCurrentInfo()
+        if (res.data && res.data.code === 200) {
+          const info = res.data.data
+          this.currentSemesterId = info.semesterId || ''
+          this.currentSemester = info.semesterName || this.semesterList[0]
+          this.currentWeek = info.currentWeek || 1
+        } else {
+          // 回退默认值
+          this.currentSemester = this.semesterList[0]
+          this.currentWeek = 1
+        }
+      } catch (error) {
+        console.error('获取学期信息失败:', error)
+        this.currentSemester = this.semesterList[0]
+        this.currentWeek = 1
+      }
+      // 更新选择器选项
+      this.semesterColumns = [this.semesterList]
+      const weeks = Array.from({ length: 20 }, (_, i) => `第${i + 1}周`)
+      this.weekColumns = [weeks]
+    },
+
+    // 加载今日待办
+    async loadTodayTodo() {
+      try {
+        const res = await listMyTodo()
+        if (res.data && res.data.code === 200) {
+          const todos = res.data.data || []
+          this.todayTodoList = todos.filter(t => 
+            t.status === '0' && (t.urgency === 'today' || t.urgency === 'overdue' || t.urgency === 'tomorrow')
+          )
+        }
+      } catch (error) {
+        // 认证失败时静默处理，不打印错误
+      }
+    },
+
+    // 跳转到待办页面
+    goTodoPage() {
+      uni.navigateTo({ url: '/pages/todo/index' })
+    },
     getWeekdayDate(weekday) {
       const now = new Date()
       const currentDay = now.getDay()
@@ -214,18 +276,19 @@ export default {
       this.loading = true
       try {
         const res = await getMySchedule({
-          semester: this.currentSemester,
+          semester: this.currentSemesterId || this.currentSemester,
           weekNumber: this.currentWeek
         })
 
         if (res.data && res.data.code === 200) {
           this.allSchedules = res.data.data || []
+        } else if (res.data && res.data.code === 401) {
+          // 认证失败，不显示错误，拦截器会处理跳转登录
         } else {
           uni.showToast({ title: res.msg || '加载失败', icon: 'none' })
         }
       } catch (error) {
-        console.error('加载课表失败:', error)
-        uni.showToast({ title: '加载课表失败', icon: 'none' })
+        // 认证失败时静默处理
       } finally {
         this.loading = false
       }
@@ -510,5 +573,71 @@ export default {
 
 .action-btn:active {
   background: #f5f7fa;
+}
+
+/* 今日待办浮层 */
+.todo-float {
+  position: fixed;
+  bottom: 120rpx;
+  right: 24rpx;
+  background: #fff;
+  border-radius: 20rpx;
+  padding: 24rpx;
+  box-shadow: 0 8rpx 32rpx rgba(0, 0, 0, 0.12);
+  width: 400rpx;
+  z-index: 50;
+}
+
+.todo-float-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16rpx;
+}
+
+.todo-float-title {
+  font-size: 26rpx;
+  font-weight: bold;
+  color: #333;
+}
+
+.todo-float-count {
+  font-size: 22rpx;
+  color: #667eea;
+  background: rgba(102, 126, 234, 0.1);
+  padding: 4rpx 12rpx;
+  border-radius: 10rpx;
+}
+
+.todo-float-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12rpx;
+}
+
+.todo-float-item {
+  display: flex;
+  align-items: center;
+  gap: 12rpx;
+}
+
+.todo-float-dot {
+  width: 12rpx;
+  height: 12rpx;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-today { background: #e43d33; }
+.dot-overdue { background: #ff4d4f; }
+.dot-tomorrow { background: #f3a044; }
+.dot-normal { background: #2979ff; }
+
+.todo-float-text {
+  font-size: 24rpx;
+  color: #555;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 </style>

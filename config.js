@@ -1,8 +1,8 @@
 // 应用全局配置
 module.exports = {
-	baseURL: 'http://192.168.1.135:8080',
+	// baseURL: 'http://192.168.1.135:8080',
 	// baseURL: 'http://172.17.201.241:8080',
-	// baseURL: 'https://ry.mytbu.cn',
+	baseURL: 'https://ry.mytbu.cn/prod-api',
 	// 应用信息
 	appInfo: {
 		// 应用名称
