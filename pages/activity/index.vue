@@ -42,7 +42,7 @@
 <script>
 	import {
 		listOpenActivities
-	} from '@/api/activity'
+	} from '@/api/activity/activity'
 	import requireLogin from '@/mixins/requireLogin.js'
 
 	const CATEGORY_MAP = {

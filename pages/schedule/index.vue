@@ -139,8 +139,8 @@
 </template>
 
 <script>
-import { getMySchedule, getCurrentInfo } from '@/api/schedule'
-import { listMyTodo } from '@/api/todo'
+import { getMySchedule, getCurrentInfo } from '@/api/activity/schedule'
+import { listMyTodo } from '@/api/affair/todo'
 
 export default {
   data() {
@@ -207,7 +207,7 @@ export default {
           this.currentWeek = 1
         }
       } catch (error) {
-        console.error('获取学期信息失败:', error)
+        // 获取学期信息失败
         this.currentSemester = this.semesterList[0]
         this.currentWeek = 1
       }

@@ -70,11 +70,9 @@
 							if (data.code === 200 && token) {
 								// openid 已绑定，直接登录成功
 								setToken(token);
-								console.log('[静默登录] 成功，准备跳转首页');
 								uni.switchTab({
 									url: '/pages/index/index',
 									fail: (err) => {
-										console.error('[静默登录] switchTab失败', err);
 										this.errorMsg = '跳转首页失败：' + (err && err.errMsg ? err.errMsg : JSON.stringify(err));
 									}
 								});
@@ -87,7 +85,6 @@
 								this.showPhoneLogin = true;
 							}
 						}).catch((err) => {
-							console.error('静默登录失败', err);
 							this.errorMsg = (err && err.msg) ? err.msg : '网络异常，请重试';
 							this.showPhoneLogin = true;
 						});
@@ -121,11 +118,9 @@
 							const token = data.token || (data.data && data.data.token) || null;
 							if (data.code === 200 && token) {
 								setToken(token);
-								console.log('[一键登录] 成功，准备跳转首页');
 								uni.switchTab({
 									url: '/pages/index/index',
 									fail: (err) => {
-										console.error('[一键登录] switchTab失败', err);
 										uni.showToast({ title: '跳转首页失败', icon: 'none' });
 									}
 								});

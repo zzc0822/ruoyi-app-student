@@ -104,16 +104,10 @@
 						if (res.confirm) {
 							// 先调后端解绑（此时还有 token），成功后再清本地状态
 							userInfoApi.unbindWx().then(({ data }) => {
-								if (data.code === 200) {
-									console.log('[解绑微信] 后端解绑成功');
-								} else {
-									console.warn('[解绑微信] 后端解绑失败：', data.msg);
-								}
 								// 无论后端成功与否，都清理本地登录态并跳转
 								removeToken();
 								uni.reLaunch({ url: '/pages/login/wxLogin' });
 							}).catch((err) => {
-								console.error('[解绑微信] 后端解绑异常：', err);
 								// 异常时也清理本地状态，避免用户卡住
 								removeToken();
 								uni.reLaunch({ url: '/pages/login/wxLogin' });

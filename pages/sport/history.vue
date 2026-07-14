@@ -86,7 +86,7 @@
 </template>
 
 <script>
-import sportApi from '@/api/sport.js'
+import sportApi from '@/api/activity/sport.js'
 
 export default {
   data() {
@@ -137,7 +137,6 @@ export default {
           this.loadStatus = this.hasMore ? 'loadmore' : 'nomore'
         }
       } catch (error) {
-        console.error('加载历史记录失败:', error)
         uni.showToast({ title: '加载失败', icon: 'none' })
         this.loadStatus = 'loadmore'
       } finally {

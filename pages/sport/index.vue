@@ -64,7 +64,7 @@
 </template>
 
 <script>
-import sportApi from '@/api/sport.js'
+import sportApi from '@/api/activity/sport.js'
 
 export default {
   data() {
@@ -100,7 +100,7 @@ export default {
           this.progressPercent = Math.min((this.todaySteps / 8000) * 100, 100)
         }
       } catch (error) {
-        console.error('加载今日步数失败:', error)
+        // 加载今日步数失败
       }
     },
 
@@ -180,7 +180,7 @@ export default {
           this.recentCheckins = res.data.data.slice(0, 5)
         }
       } catch (error) {
-        console.error('加载打卡记录失败:', error)
+        // 加载打卡记录失败
       }
     },
 
@@ -242,8 +242,6 @@ export default {
       
       const delay = target.getTime() - now.getTime()
       
-      console.log(`静默同步将在 ${delay / 1000 / 60} 分钟后执行（${target.toLocaleString()}）`)
-      
       // 设置定时器
       this.silentSyncTimer = setTimeout(() => {
         this.executeSilentSync()
@@ -258,14 +256,12 @@ export default {
       if (this.silentSyncTimer) {
         clearTimeout(this.silentSyncTimer)
         this.silentSyncTimer = null
-        console.log('静默同步定时器已清理')
       }
     },
 
     // 执行静默同步
     executeSilentSync() {
       // #ifdef MP-WEIXIN
-      console.log('开始静默同步微信运动数据...')
       
       // 静默获取微信运动数据（不显示 loading）
       wx.getWeRunData({
@@ -276,17 +272,14 @@ export default {
             date: this.currentDate
           }).then(response => {
             if (response.data && response.data.code === 200) {
-              console.log('静默同步成功:', response.data.data)
               this.loadTodaySteps()  // 刷新步数显示
-            } else {
-              console.warn('静默同步失败:', response.data.msg)
             }
-          }).catch(err => {
-            console.error('静默同步请求失败:', err)
+          }).catch(() => {
+            // 静默同步请求失败
           })
         },
-        fail: (err) => {
-          console.error('获取微信运动数据失败:', err)
+        fail: () => {
+          // 获取微信运动数据失败
         }
       })
       // #endif

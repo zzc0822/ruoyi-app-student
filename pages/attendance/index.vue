@@ -75,7 +75,7 @@
 </template>
 
 <script>
-import userInfoApi from '@/api/userInfo.js'
+import userInfoApi from '@/api/student/userInfo.js'
 import requireLogin from '@/mixins/requireLogin.js'
 
 export default {

@@ -42,7 +42,7 @@
 </template>
 
 <script>
-import { getScoreRecords, getScoreSummary } from '@/api/score.js'
+import { getScoreRecords, getScoreSummary } from '@/api/student/score.js'
 import requireLogin from '@/mixins/requireLogin.js'
 
 export default {
@@ -72,7 +72,7 @@ export default {
 					this.summary = res.data.data
 				}
 			} catch (e) {
-				console.error('加载积分摘要失败', e)
+				// 加载积分摘要失败
 			}
 		},
 		async loadList(refresh = true) {

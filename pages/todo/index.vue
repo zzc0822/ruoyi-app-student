@@ -57,7 +57,7 @@
 </template>
 
 <script>
-import { listMyTodo, markRead } from '@/api/todo'
+import { listMyTodo, markRead } from '@/api/affair/todo'
 
 export default {
   data() {
@@ -88,7 +88,7 @@ export default {
           this.todoList = res.data.data || []
         }
       } catch (error) {
-        console.error('加载待办失败:', error)
+        // 加载待办失败
       }
     },
     async toggleComplete(item) {

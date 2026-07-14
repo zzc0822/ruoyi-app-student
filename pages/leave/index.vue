@@ -227,8 +227,8 @@
 </template>
 
 <script>
-import { getMyLeaves, applyLeave, getLeaveScoreHint } from '@/api/leave.js'
-import userInfoApi from '@/api/userInfo.js'
+import { getMyLeaves, applyLeave, getLeaveScoreHint } from '@/api/affair/leave.js'
+import userInfoApi from '@/api/student/userInfo.js'
 import config from '@/config'
 import { isLogin } from '@/utils/auth'
 import requireLogin from '@/mixins/requireLogin.js'
@@ -374,7 +374,7 @@ export default {
 					}
 				}
 			} catch (e) {
-				console.error('加载学生信息失败', e)
+				// 加载学生信息失败
 			}
 		},
 		// 静默登录成功后加载学生信息
@@ -393,7 +393,7 @@ export default {
 		},
 		// 图片加载失败处理
 		onImageError(e) {
-			console.warn('佐证图片加载失败:', e)
+			// 佐证图片加载失败
 		},
 		// 获取请假扣分提示
 		fetchScoreHint() {
@@ -528,7 +528,6 @@ export default {
 				},
 				fail: (err) => {
 					this.removeUploadFail(filePath)
-					console.error('上传失败', err)
 					uni.showToast({ title: '图片上传失败，请重试', icon: 'none' })
 				}
 			})
@@ -583,8 +582,7 @@ export default {
 						await userInfoApi.updatePhone(currentPhone)
 						this.originalPhone = currentPhone
 					} catch (phoneErr) {
-						console.warn('保存历史电话失败', phoneErr)
-						// 不阻断请假提交
+						// 保存历史电话失败，不阻断请假提交
 					}
 				}
 

@@ -163,6 +163,43 @@
 				"navigationBarTitleText": "打卡历史",
 				"enablePullDownRefresh": false
 			}
+		},
+		/** -----offcampus----- */
+		{
+			"path": "pages/offcampus/index",
+			"style": {
+				"navigationBarTitleText": "外宿申请",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/offcampus/add",
+			"style": {
+				"navigationBarTitleText": "提交外宿申请",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/offcampus/detail",
+			"style": {
+				"navigationBarTitleText": "申请详情",
+				"enablePullDownRefresh": false
+			}
+		},
+		/** -----certificate----- */
+		{
+			"path": "pages/certificate/index",
+			"style": {
+				"navigationBarTitleText": "我的证书",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/certificate/detail",
+			"style": {
+				"navigationBarTitleText": "证书详情",
+				"enablePullDownRefresh": false
+			}
 		}
 
 	],

@@ -34,7 +34,7 @@
 	import {
 		listMyActivities,
 		cancelSignupActivity
-	} from '@/api/activity'
+	} from '@/api/activity/activity'
 	import requireLogin from '@/mixins/requireLogin.js'
 
 	const STATUS_MAP = {

@@ -63,7 +63,7 @@
 </template>
 
 <script>
-import sportApi from '@/api/sport.js'
+import sportApi from '@/api/activity/sport.js'
 
 export default {
   data() {
@@ -131,7 +131,6 @@ export default {
         }
       } catch (error) {
         uni.hideLoading()
-        console.error('开始运动失败:', error)
         uni.showToast({ title: '开始失败', icon: 'none' })
       }
     },
@@ -155,7 +154,6 @@ export default {
             resolve()
           },
           fail: (err) => {
-            console.error('开启定位失败:', err)
             uni.showToast({ title: '定位权限未开启', icon: 'none' })
             reject(err)
           }
@@ -235,7 +233,7 @@ export default {
           }
         })
       } catch (error) {
-        console.error('结束运动失败:', error)
+        // 结束运动失败
       }
     },
 
@@ -264,7 +262,6 @@ export default {
         }
       } catch (error) {
         uni.hideLoading()
-        console.error('完成打卡失败:', error)
         uni.showToast({ title: '保存失败', icon: 'none' })
       }
     },

@@ -49,7 +49,7 @@
 </template>
 
 <script>
-import sportApi from '@/api/sport.js'
+import sportApi from '@/api/activity/sport.js'
 
 export default {
   data() {
@@ -94,7 +94,6 @@ export default {
           }))
         }
       } catch (error) {
-        console.error('加载排名失败:', error)
         uni.showToast({ title: '加载失败', icon: 'none' })
       } finally {
         this.loading = false

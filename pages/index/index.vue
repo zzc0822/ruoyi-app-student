@@ -59,12 +59,28 @@
 					<text class="function-desc">积分变动详情</text>
 				</view>
 				
+				<view class="function-item" @click="navigateTo('/pages/offcampus/index')">
+					<view class="function-icon offcampus-icon">
+						<u-icon name="home" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">外宿申请</text>
+					<text class="function-desc">在线提交申请</text>
+				</view>
+				
 				<view class="function-item" @click="navigateTo('/pages/sport/index')">
 					<view class="function-icon sport-icon">
 						<u-icon name="run" size="48" color="#fff"></u-icon>
 					</view>
 					<text class="function-name">运动健康</text>
 					<text class="function-desc">步数打卡排名</text>
+				</view>
+				
+				<view class="function-item" @click="navigateTo('/pages/certificate/index')">
+					<view class="function-icon certificate-icon">
+						<u-icon name="order" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">我的证书</text>
+					<text class="function-desc">查看荣誉证书</text>
 				</view>
 			</view>
 		</view>
@@ -155,9 +171,9 @@
 	//api
 	import touristApi from "@/api/tourist";
 	import operateApi from "@/api/operate";
-	import { getMySchedule, getCurrentInfo } from '@/api/schedule'
-	import { listMyTodo } from '@/api/todo'
-	import userInfoApi from '@/api/userInfo.js'
+	import { getMySchedule, getCurrentInfo } from '@/api/activity/schedule'
+	import { listMyTodo } from '@/api/affair/todo'
+	import userInfoApi from '@/api/student/userInfo.js'
 
 	import {
 		isLogin
@@ -254,7 +270,7 @@
 						this.studentName = data.data.studentName || data.data.xm || ''
 					}
 				} catch (error) {
-					console.error('加载学生信息失败:', error)
+					// 加载学生信息失败
 				}
 			},
 			// 导航到指定页面
@@ -578,6 +594,14 @@
 
 .sport-icon {
 	background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.offcampus-icon {
+	background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.certificate-icon {
+	background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
 }
 
 .function-name {

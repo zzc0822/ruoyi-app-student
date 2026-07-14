@@ -120,11 +120,9 @@
 			},
 			//读取前
 			beforeRead(event) {
-				console.log(event)
 			},
 			//读取后
 			afterRead(event) {
-				console.log(event)
 			},
 			//超出大小
 			oversize(event) {
@@ -172,8 +170,6 @@
 								url: lists[i].url
 							}))
 							fileListLen++
-
-							console.log(this.fileList)
 
 						}).catch((res) => {
 
@@ -240,7 +236,7 @@
 					if (file.message !== undefined && file.message.code == 200) {
 						this.contentParam.fileList.push(file.message.data.fileId);
 					} else {
-						console.log("禁止");
+						// 文件未上传成功
 					}
 				}
 				if (this.contentParam.categoryId == '') {

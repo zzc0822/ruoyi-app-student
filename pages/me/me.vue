@@ -604,14 +604,12 @@
 			// 加载变更申请列表
 			loadChangeRequests() {
 				userInfoApi.getMyChangeRequests({}).then(({ data }) => {
-					console.log('变更申请接口返回:', data);
 					if (data.code === 200 && data.data) {
 						this.changeRequests = data.data.list || [];
-						console.log('changeRequests 赋值后:', this.changeRequests);
 						this.pendingCount = this.changeRequests.filter(r => r.approvalStatus === 'pending').length;
 					}
 				}).catch((err) => {
-					console.error('加载变更申请失败:', err);
+					// 加载变更申请失败
 				});
 			},
 			// 查看变更申请（切换tab）
