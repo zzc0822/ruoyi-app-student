@@ -215,7 +215,6 @@
 						this.commentRows.push(i)
 					};
 					this.commentRows = this.handleTree(this.commentRows, "commentId");
-					console.log(this.commentRows)
 					this.commentTotal = parseInt(data.allTotal);
 					this.total = parseInt(data.total);
 
@@ -247,7 +246,6 @@
 			},
 			//评论成功后
 			commentSuccess(response) {
-				console.log(response)
 			},
 			//添加评论或回复评论
 			addComment() {
