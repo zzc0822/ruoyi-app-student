@@ -38,6 +38,10 @@
 				<text class="info-label">外宿类型</text>
 				<text class="info-value">{{ formatHousingType(detail.housingType) }}</text>
 			</view>
+			<view class="info-row" v-if="detail.startDate">
+				<text class="info-label">外宿期限</text>
+				<text class="info-value">{{ detail.startDate }} 至 {{ detail.endDate }}</text>
+			</view>
 			<view class="info-row">
 				<text class="info-label">外宿地址</text>
 				<text class="info-value">{{ detail.address }}</text>
@@ -60,7 +64,7 @@
 				<text class="material-label">房产证</text>
 				<image :src="detail.propertyCert" class="material-img" mode="aspectFill" @click="previewImage(detail.propertyCert)" />
 			</view>
-			<view v-if="detail.housingType === 'own_house' && detail.relationCert" class="material-section">
+			<view v-if="(detail.housingType === 'own_house' || detail.housingType === 'relative') && detail.relationCert" class="material-section">
 				<text class="material-label">关系证明</text>
 				<image :src="detail.relationCert" class="material-img" mode="aspectFill" @click="previewImage(detail.relationCert)" />
 			</view>

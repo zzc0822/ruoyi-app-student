@@ -39,6 +39,10 @@
 					<text class="item-label">学年</text>
 					<text class="item-value">{{ item.academicYear }}</text>
 				</view>
+				<view class="item-row" v-if="item.startDate">
+					<text class="item-label">外宿期限</text>
+					<text class="item-value">{{ item.startDate }} 至 {{ item.endDate }}</text>
+				</view>
 			</view>
 			<view class="empty-tip" v-if="!loading && list.length === 0">
 				<text>暂无外宿申请记录</text>

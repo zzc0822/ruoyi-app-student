@@ -28,3 +28,12 @@ export function getOffcampusDetail(id) {
     method: 'get'
   })
 }
+
+// 外宿期限候选：整学年 + 各学期（取自校历）
+export function getOffcampusPeriods(academicYear) {
+  return request({
+    url: '/api/offcampus/periods',
+    method: 'get',
+    params: { academicYear: academicYear }
+  })
+}

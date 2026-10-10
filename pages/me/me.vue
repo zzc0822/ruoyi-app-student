@@ -175,7 +175,7 @@
 					</view>
 					<view class="info-row" v-if="studentInfo">
 						<text class="info-label">宿舍号</text>
-						<text class="info-value">{{studentInfo.ssh || '--'}}</text>
+						<text class="info-value">{{studentInfo.sssh || '--'}}</text>
 					</view>
 				</view>
 			</view>
@@ -346,7 +346,7 @@
 		school: {
 			title: '编辑校内信息',
 			fields: [
-				{ name: 'ssh', label: '宿舍号' }
+				{ name: 'sssh', label: '宿舍号' }
 			]
 		},
 		bank: {

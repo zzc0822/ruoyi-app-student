@@ -30,6 +30,27 @@
 				</picker>
 			</view>
 			<view class="form-item">
+				<text class="form-label">学年</text>
+				<text class="form-value">{{ form.academicYear }}</text>
+			</view>
+			<view class="form-item">
+				<text class="form-label">外宿期限 <text class="required">*</text></text>
+				<view class="period-chips">
+					<text v-for="p in periodOptions" :key="p.code" class="period-chip" :class="{ active: periodPreset === p.code }" @click="pickPreset(p.code)">{{ p.short }}</text>
+					<text class="period-chip" :class="{ active: periodPreset === 'custom' }" @click="periodPreset = 'custom'">自定义</text>
+				</view>
+				<view class="period-range">
+					<picker class="period-cell" mode="date" :value="form.startDate" @change="onStartDateChange">
+						<view class="form-picker"><text :class="{ placeholder: !form.startDate }">{{ form.startDate || '开始日期' }}</text></view>
+					</picker>
+					<text class="period-sep">至</text>
+					<picker class="period-cell" mode="date" :value="form.endDate" @change="onEndDateChange">
+						<view class="form-picker"><text :class="{ placeholder: !form.endDate }">{{ form.endDate || '结束日期' }}</text></view>
+					</picker>
+				</view>
+				<text class="period-tip">外宿一般覆盖整学年；学期中途开始可自开学日起、学年末止</text>
+			</view>
+			<view class="form-item">
 				<text class="form-label">外宿地址 <text class="required">*</text></text>
 				<input class="form-input" v-model="form.address" placeholder="请输入详细地址" />
 			</view>
@@ -51,8 +72,11 @@
 						<view v-else class="upload-placeholder"><text class="upload-icon">+</text><text>拍照上传</text></view>
 					</view>
 				</view>
+			</view>
+			<!-- 自有住房与投靠亲属都要关系证明 -->
+			<view v-if="form.housingType === 'own_house' || form.housingType === 'relative'">
 				<view class="form-item">
-					<text class="form-label">关系证明 <text class="required">*</text></text>
+					<text class="form-label">{{ form.housingType === 'relative' ? '亲属关系证明' : '关系证明' }} <text class="required">*</text></text>
 					<view class="upload-box" @click="chooseImage('relationCert')">
 						<image v-if="form.relationCert" :src="form.relationCert" class="upload-preview" mode="aspectFill" />
 						<view v-else class="upload-placeholder"><text class="upload-icon">+</text><text>拍照上传</text></view>
@@ -128,7 +152,7 @@
 </template>
 
 <script>
-	import { submitOffcampus } from '@/api/affair/offcampus'
+	import { submitOffcampus, getOffcampusPeriods } from '@/api/affair/offcampus'
 	import userInfoApi from '@/api/student/userInfo.js'
 	import config from '@/config'
 	import requireLogin from '@/mixins/requireLogin.js'
@@ -139,15 +163,21 @@
 			return {
 				form: {
 					xh: '', studentName: '', bjdm: '', className: '', xydm: '',
+					academicYear: '', startDate: '', endDate: '',
 					housingType: '', applyReason: '', address: '',
 					propertyCert: '', relationCert: '', rentContract: '',
 					transportType: '', transportProof: ''
 				},
+				// 外宿期限快捷项，取自校历
+				periodOptions: [],
+				periodPreset: 'full_year',
 				reasonPhotos: [],
 				housingPhotos: [],
 				housingTypeOptions: [
 					{ label: '自有住房', value: 'own_house' },
-					{ label: '租房', value: 'rent_house' }
+					{ label: '租房', value: 'rent_house' },
+					{ label: '投靠亲属', value: 'relative' },
+					{ label: '其他', value: 'other' }
 				],
 				transportOptions: [
 					{ label: '步行', value: 'walk' },
@@ -161,9 +191,47 @@
 			}
 		},
 		onLoad() {
+			this.calcAcademicYear()
+			this.loadPeriods()
 			this.loadStudentInfo()
 		},
 		methods: {
+			/** 学年按 9 月切分：秋季学期起为 newYear-(newYear+1) */
+			calcAcademicYear() {
+				const now = new Date()
+				const year = now.getFullYear()
+				this.form.academicYear = now.getMonth() + 1 >= 9 ? year + '-' + (year + 1) : (year - 1) + '-' + year
+			},
+			/** 期限候选取自校历：整学年 + 该学年各学期 */
+			loadPeriods() {
+				return getOffcampusPeriods(this.form.academicYear).then(res => {
+					const body = res.data || {}
+					this.periodOptions = (body.data || []).map(p => ({
+						code: p.code,
+						short: p.code === 'full_year' ? '整学年' : String(p.label || '').replace(/^\d{4}-\d{4}学年/, ''),
+						startDate: p.startDate,
+						endDate: p.endDate
+					}))
+					if (this.periodPreset !== 'custom') this.pickPreset(this.periodPreset)
+				}).catch(() => {
+					this.periodOptions = []
+				})
+			},
+			pickPreset(code) {
+				const p = this.periodOptions.find(item => item.code === code)
+				if (!p) return
+				this.periodPreset = code
+				this.form.startDate = p.startDate
+				this.form.endDate = p.endDate
+			},
+			onStartDateChange(e) {
+				this.form.startDate = e.detail.value
+				this.periodPreset = 'custom'
+			},
+			onEndDateChange(e) {
+				this.form.endDate = e.detail.value
+				this.periodPreset = 'custom'
+			},
 			async loadStudentInfo() {
 				try {
 					const { data } = await userInfoApi.getMyStudentInfo()
@@ -186,8 +254,8 @@
 				this.form.transportType = this.transportOptions[e.detail.value].value
 			},
 			housingTypeText(val) {
-				const m = { own_house: '自有住房', rent_house: '租房' }
-				return m[val] || val
+				const hit = this.housingTypeOptions.find(o => o.value === val)
+				return hit ? hit.label : (val || '-')
 			},
 			transportText(val) {
 				const m = { walk: '步行', bus: '公交车', metro: '地铁', electric_bike: '电动车', motorcycle: '摩托车', car: '汽车', other: '其他' }
@@ -251,6 +319,8 @@
 			},
 			async submit() {
 				if (!this.form.housingType) return uni.showToast({ title: '请选择外宿类型', icon: 'none' })
+				if (!this.form.startDate || !this.form.endDate) return uni.showToast({ title: '请选择外宿期限', icon: 'none' })
+				if (this.form.startDate > this.form.endDate) return uni.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
 				if (!this.form.address) return uni.showToast({ title: '请输入外宿地址', icon: 'none' })
 				if (!this.form.applyReason) return uni.showToast({ title: '请输入外宿理由', icon: 'none' })
 				if (this.form.housingType === 'own_house' && !this.form.propertyCert) return uni.showToast({ title: '请上传房产证', icon: 'none' })
@@ -332,6 +402,20 @@
 	}
 	.placeholder { color: #999; }
 	.picker-arrow { font-size: 24rpx; color: #999; }
+	.period-chips { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 14rpx; }
+	.period-chip {
+		padding: 8rpx 22rpx;
+		border-radius: 24rpx;
+		background: #f0f2f5;
+		color: #666;
+		font-size: 24rpx;
+		border: 2rpx solid transparent;
+	}
+	.period-chip.active { background: #eef1ff; color: #667eea; border-color: #667eea; }
+	.period-range { display: flex; align-items: center; }
+	.period-cell { flex: 1; }
+	.period-sep { padding: 0 14rpx; font-size: 24rpx; color: #999; }
+	.period-tip { display: block; margin-top: 10rpx; font-size: 22rpx; color: #999; line-height: 32rpx; }
 	.upload-box {
 		width: 200rpx;
 		height: 200rpx;
