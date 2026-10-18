@@ -8,15 +8,6 @@ export default {
             method: `get`
         })
     },
-    //判断有没有绑定邮箱
-    haveMail() {
-        return request({
-            url: "/campus/haveMail",
-            method: `get`
-        })
-    },
-
-
     // 查询用户个人信息
     getUserProfile() {
         return request({

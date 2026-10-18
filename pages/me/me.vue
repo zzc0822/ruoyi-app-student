@@ -259,7 +259,8 @@
 					<u-form :model="editForm" ref="editFormRef" labelWidth="100">
 						<view v-for="(field, idx) in editFields" :key="idx">
 							<u-form-item :label="field.label" :prop="field.name">
-								<u-input v-model="editForm[field.name]" :placeholder="field.placeholder || ('请输入' + field.label)" border="surround"></u-input>
+								<region-picker v-if="field.region" v-model="editForm[field.name]" />
+								<u-input v-else v-model="editForm[field.name]" :placeholder="field.placeholder || ('请输入' + field.label)" border="surround"></u-input>
 							</u-form-item>
 						</view>
 						<u-form-item label="变更原因">
@@ -340,7 +341,7 @@
 			fields: [
 				{ name: 'jtlxr', label: '家庭联系人' },
 				{ name: 'jtdh', label: '家庭电话' },
-				{ name: 'jtdz', label: '家庭地址' }
+				{ name: 'jtdz', label: '家庭地址', region: true }
 			]
 		},
 		school: {

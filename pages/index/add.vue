@@ -105,10 +105,10 @@
 		onLoad: function(option) { //option为object类型，会序列化上个页面传递的参数
 			this.type = option.type
 			if (this.type == 1) {
-				this.url = this.MyConfig.baseURL + '/campus/imageUpload'
+				this.url = this.MyConfig.baseURL + '/common/upload'
 			}
 			if (this.type == 2) {
-				this.url = this.MyConfig.baseURL + '/campus/videoUpload'
+				this.url = this.MyConfig.baseURL + '/common/upload'
 			}
 
 

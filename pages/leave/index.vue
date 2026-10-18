@@ -168,7 +168,7 @@
 				<!-- 目的地 -->
 				<view class="form-item">
 					<text class="form-label">去往地点</text>
-					<input class="input" v-model="form.destination" placeholder="请填写去往地点" />
+					<region-picker v-model="form.destination" default-province="广东省" detail-placeholder="具体地点（选填）" />
 				</view>
 
 				<!-- 联系电话 -->

@@ -52,7 +52,7 @@
 			</view>
 			<view class="form-item">
 				<text class="form-label">外宿地址 <text class="required">*</text></text>
-				<input class="form-input" v-model="form.address" placeholder="请输入详细地址" />
+				<region-picker v-model="form.address" default-province="广东省" />
 			</view>
 			<view class="form-item">
 				<text class="form-label">外宿理由 <text class="required">*</text></text>
