@@ -37,3 +37,12 @@ export function getOffcampusPeriods(academicYear) {
     params: { academicYear: academicYear }
   })
 }
+
+// 解析外宿地址、返回地图坐标及到校直线距离
+export function previewOffcampusLocation(address, campus) {
+  return request({
+    url: '/api/offcampus/location',
+    method: 'get',
+    params: { address: address, campus: campus }
+  })
+}

@@ -111,6 +111,13 @@
 				"enablePullDownRefresh": true
 			}
 		},
+		{
+			"path": "pages/sign/index",
+			"style": {
+				"navigationBarTitleText": "手机点名",
+				"enablePullDownRefresh": true
+			}
+		},
 		/** -----score----- */
 		{
 			"path": "pages/score/record",

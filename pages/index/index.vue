@@ -50,6 +50,14 @@
 					<text class="function-name">出勤积分</text>
 					<text class="function-desc">查看考勤记录</text>
 				</view>
+
+				<view class="function-item" @click="navigateTo('/pages/sign/index')">
+					<view class="function-icon sign-icon">
+						<u-icon name="scan" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">手机点名</text>
+					<text class="function-desc">课堂与晚寝确认</text>
+				</view>
 				
 				<view class="function-item" @click="navigateTo('/pages/score/record')">
 					<view class="function-icon score-icon">
@@ -586,6 +594,10 @@
 
 .attendance-icon {
 	background: linear-gradient(135deg, #e43d33 0%, #ff6b6b 100%);
+}
+
+.sign-icon {
+	background: linear-gradient(135deg, #0f8b6d 0%, #45b99a 100%);
 }
 
 .score-icon {

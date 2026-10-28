@@ -52,7 +52,8 @@
 			</view>
 			<view class="form-item">
 				<text class="form-label">外宿地址 <text class="required">*</text></text>
-				<region-picker v-model="form.address" default-province="广东省" />
+				<region-picker v-model="form.address" default-province="广东省" default-city="肇庆市" default-district="端州区" />
+				<offcampus-location :address="form.address" :campus="form.campus" />
 			</view>
 			<view class="form-item">
 				<text class="form-label">外宿理由 <text class="required">*</text></text>
@@ -156,13 +157,15 @@
 	import userInfoApi from '@/api/student/userInfo.js'
 	import config from '@/config'
 	import requireLogin from '@/mixins/requireLogin.js'
+	import OffcampusLocation from '@/components/offcampus-location/offcampus-location.vue'
 
 	export default {
+		components: { OffcampusLocation },
 		mixins: [requireLogin],
 		data() {
 			return {
 				form: {
-					xh: '', studentName: '', bjdm: '', className: '', xydm: '',
+					xh: '', studentName: '', bjdm: '', className: '', xydm: '', campus: '',
 					academicYear: '', startDate: '', endDate: '',
 					housingType: '', applyReason: '', address: '',
 					propertyCert: '', relationCert: '', rentContract: '',
@@ -242,6 +245,7 @@
 						this.form.bjdm = stu.bjdm || ''
 						this.form.className = stu.className || ''
 						this.form.xydm = stu.xydm || ''
+						this.form.campus = stu.campus || '星湖校区'
 					}
 				} catch (e) {
 					uni.showToast({ title: '加载学生信息失败', icon: 'none' })
@@ -260,6 +264,11 @@
 			transportText(val) {
 				const m = { walk: '步行', bus: '公交车', metro: '地铁', electric_bike: '电动车', motorcycle: '摩托车', car: '汽车', other: '其他' }
 				return m[val] || val
+			},
+			hasSpecificAddress(address) {
+				const text = String(address || '').replace(/\//g, '').trim()
+				const matched = text.match(/(?:省|自治区).*?(?:市|自治州|地区).*?(?:区|县|旗)(.+)$/)
+				return (matched ? matched[1] : text).trim().length >= 2
 			},
 			chooseImage(field) {
 				uni.chooseImage({
@@ -321,7 +330,7 @@
 				if (!this.form.housingType) return uni.showToast({ title: '请选择外宿类型', icon: 'none' })
 				if (!this.form.startDate || !this.form.endDate) return uni.showToast({ title: '请选择外宿期限', icon: 'none' })
 				if (this.form.startDate > this.form.endDate) return uni.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
-				if (!this.form.address) return uni.showToast({ title: '请输入外宿地址', icon: 'none' })
+				if (!this.hasSpecificAddress(this.form.address)) return uni.showToast({ title: '请填写具体街道、小区或门牌号', icon: 'none' })
 				if (!this.form.applyReason) return uni.showToast({ title: '请输入外宿理由', icon: 'none' })
 				if (this.form.housingType === 'own_house' && !this.form.propertyCert) return uni.showToast({ title: '请上传房产证', icon: 'none' })
 				if (this.form.housingType === 'own_house' && !this.form.relationCert) return uni.showToast({ title: '请上传关系证明', icon: 'none' })

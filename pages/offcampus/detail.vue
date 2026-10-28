@@ -46,6 +46,7 @@
 				<text class="info-label">外宿地址</text>
 				<text class="info-value">{{ detail.address }}</text>
 			</view>
+			<offcampus-location :saved="detail" :auto-preview="false" />
 			<view class="info-row">
 				<text class="info-label">外宿理由</text>
 				<text class="info-value">{{ detail.applyReason }}</text>
@@ -178,6 +179,7 @@
 <script>
 	import { getOffcampusDetail } from '@/api/affair/offcampus'
 	import requireLogin from '@/mixins/requireLogin.js'
+	import OffcampusLocation from '@/components/offcampus-location/offcampus-location.vue'
 
 	const STATUS_MAP = {
 		'pending_verify': '待核实',
@@ -192,6 +194,7 @@
 	const APPROVAL_LEVEL_MAP = { verify: '现场核实', counselor: '辅导员', secretary: '书记', affairs: '学生处' }
 
 	export default {
+		components: { OffcampusLocation },
 		mixins: [requireLogin],
 		data() {
 			return {

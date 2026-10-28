@@ -60,7 +60,7 @@
 							<text class="info-label">审批流程</text>
 							<text class="info-val flow-text">{{ flowText(item) }}</text>
 						</view>
-						<view class="info-row" v-if="item.scorePoints != null">
+						<view class="info-row" v-if="item.scorePoints != null && item.scorePoints !== 0">
 							<text class="info-label">扣分</text>
 							<text class="info-val score-points">{{ item.scorePoints }} 分</text>
 						</view>
@@ -215,8 +215,8 @@
 				<view class="tips-box">
 					<text class="tips-title">温馨提示</text>
 					<text class="tips-text">· 3天及以内由辅导员审批，超过3天需书记审批</text>
-					<text class="tips-text" v-if="scoreHint">· 本次属于{{ scoreHint.sceneName }}，预计{{ scoreHint.points >= 0 ? '加' : '扣' }}{{ Math.abs(scoreHint.points) }}分二课积分</text>
-					<text class="tips-text" v-else>· 请选择起止日期后查看积分变化提示</text>
+					<text class="tips-text" v-if="scoreHint && scoreHint.points !== 0">· 本次属于{{ scoreHint.sceneName }}，预计{{ scoreHint.points >= 0 ? '加' : '扣' }}{{ Math.abs(scoreHint.points) }}分二课积分</text>
+					<text class="tips-text" v-else-if="!scoreHint">· 请选择起止日期后查看积分变化提示</text>
 					<text class="tips-text">· 请如实填写信息，祝假期愉快</text>
 				</view>
 
