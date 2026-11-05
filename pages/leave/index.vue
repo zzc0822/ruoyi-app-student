@@ -38,10 +38,10 @@
 					<view class="item-body">
 						<view class="info-row">
 							<text class="info-label">假期时间</text>
-							<text class="info-val">{{ formatDate(item.startTime) }} 至 {{ formatDate(item.endTime) }}</text>
+							<text class="info-val">{{ formatLeaveRange(item.startTime, item.endTime) }}</text>
 						</view>
 						<view class="info-row compact-row">
-							<text class="compact-item"><text class="info-label">天数</text> <text class="info-val">{{ item.leaveDays }} 天</text></text>
+							<text class="compact-item"><text class="info-label">天数</text> <text class="info-val">{{ formatDays(item.leaveDays) }} 天</text></text>
 							<text class="compact-item"><text class="info-label">原因</text> <text class="info-val reason-text">{{ item.leaveReason || '--' }}</text></text>
 						</view>
 						<view class="info-row" v-if="item.transportType">
@@ -113,34 +113,58 @@
 					</view>
 				</view>
 
-				<!-- 开始日期 -->
+				<!-- 请假时间（支持半天） -->
 				<view class="form-item">
-					<text class="form-label">开始日期 <text class="required">*</text></text>
-					<picker mode="date" :value="form.startTime" :start="todayStr" :end="startDateMaxStr" @change="onStartChange">
-						<view class="picker-display">
-							<text>{{ form.startTime || '请选择开始日期' }}</text>
-							<text class="arrow">›</text>
+					<text class="form-label">请假时间 <text class="required">*</text></text>
+					<view class="quick-duration">
+						<view
+							v-for="q in quickDurations"
+							:key="q.value"
+							:class="['quick-chip', leaveDaysCalc === q.value ? 'quick-active' : '']"
+							@click="applyQuickDuration(q.value)">
+							{{ q.label }}
 						</view>
-					</picker>
-					<text class="sub-tip">最多可提前7天申请</text>
-				</view>
-
-				<!-- 结束日期 -->
-				<view class="form-item">
-					<text class="form-label">结束日期 <text class="required">*</text></text>
-					<picker mode="date" :value="form.endTime" :start="form.startTime || todayStr" :end="endDateMaxStr" @change="onEndChange">
-						<view class="picker-display">
-							<text>{{ form.endTime || '请选择结束日期' }}</text>
-							<text class="arrow">›</text>
+					</view>
+					<view class="time-block">
+						<text class="time-block-label">开始</text>
+						<view class="time-row">
+							<picker class="time-date-picker" mode="date" :value="startDateValue" :start="todayStr" :end="startDateMaxStr" @change="onStartDateChange">
+								<view class="picker-display">
+									<text>{{ startDateValue ? startDateValue + ' ' + halfText(form.startHalf) : '请选择开始日期' }}</text>
+									<text class="arrow">›</text>
+								</view>
+							</picker>
+							<view class="half-toggle">
+								<view :class="['half-item', form.startHalf === 'am' ? 'half-active' : '']" @click="onStartHalfChange('am')">上午</view>
+								<view :class="['half-item', form.startHalf === 'pm' ? 'half-active' : '']" @click="onStartHalfChange('pm')">下午</view>
+							</view>
 						</view>
-					</picker>
-					<text class="sub-tip">单次请假最多7天，超出请线下找辅导员申请</text>
+						<text class="sub-tip">上午按 08:00 开始，下午按 14:00 开始</text>
+					</view>
+					<view class="time-block">
+						<text class="time-block-label">结束</text>
+						<view class="time-row">
+							<picker class="time-date-picker" mode="date" :value="endDateValue" :start="startDateValue || todayStr" :end="endDateMaxStr" @change="onEndDateChange">
+								<view class="picker-display">
+									<text>{{ endDateValue ? endDateValue + ' ' + halfText(form.endHalf) : '请选择结束日期' }}</text>
+									<text class="arrow">›</text>
+								</view>
+							</picker>
+							<view class="half-toggle">
+								<view :class="['half-item', form.endHalf === 'am' ? 'half-active' : '']" @click="onEndHalfChange('am')">上午</view>
+								<view :class="['half-item', form.endHalf === 'pm' ? 'half-active' : '']" @click="onEndHalfChange('pm')">下午</view>
+							</view>
+						</view>
+						<text class="sub-tip">上午按 12:00 结束，下午按 18:00 结束</text>
+					</view>
+					<text class="sub-tip">最多提前7天申请，单次请假最多7天，超出请线下找辅导员申请</text>
 				</view>
 
 				<!-- 请假天数（自动计算） -->
 				<view class="form-item" v-if="form.startTime && form.endTime">
 					<text class="form-label">请假天数</text>
-					<text class="days-text">{{ leaveDaysCalc }} 天</text>
+					<text class="days-text">{{ formatDays(leaveDaysCalc) }} 天</text>
+					<text class="days-warn" v-if="leaveDaysCalc > 7">超过7天，请线下申请</text>
 				</view>
 
 				<!-- 请假原因（选择为主） -->
@@ -216,7 +240,7 @@
 					<text class="tips-title">温馨提示</text>
 					<text class="tips-text">· 3天及以内由辅导员审批，超过3天需书记审批</text>
 					<text class="tips-text" v-if="scoreHint && scoreHint.points !== 0">· 本次属于{{ scoreHint.sceneName }}，预计{{ scoreHint.points >= 0 ? '加' : '扣' }}{{ Math.abs(scoreHint.points) }}分二课积分</text>
-					<text class="tips-text" v-else-if="!scoreHint">· 请选择起止日期后查看积分变化提示</text>
+					<text class="tips-text" v-else-if="!scoreHint">· 请选择起止时间后查看积分变化提示</text>
 					<text class="tips-text">· 请如实填写信息，祝假期愉快</text>
 				</view>
 
@@ -257,6 +281,8 @@ export default {
 				leaveType: 'personal',
 				startTime: '',
 				endTime: '',
+				startHalf: 'am',
+				endHalf: 'pm',
 				leaveReason: '',
 				reasonType: '',
 				destination: '',
@@ -264,6 +290,13 @@ export default {
 				transportType: '',
 				transportInfo: '',
 			},
+			// 请假时长快捷选项（按半天为最小粒度）
+			quickDurations: [
+				{ label: '半天', value: 0.5 },
+				{ label: '1天', value: 1 },
+				{ label: '3天', value: 3 },
+				{ label: '一周', value: 7 },
+			],
 			leaveTypes: [
 				{ label: '事假', value: 'personal' },
 				{ label: '病假', value: 'sick' },
@@ -301,11 +334,17 @@ export default {
 			d.setDate(d.getDate() + 7)
 			return this.formatDateStr(d)
 		},
-		// 结束日期最大值：开始日期+7天
+		startDateValue() {
+			return this.dateOnly(this.form.startTime)
+		},
+		endDateValue() {
+			return this.dateOnly(this.form.endTime)
+		},
+		// 结束日期最大值：开始日期+7天（下午开始的一周假需要跨到第7天上午）
 		endDateMaxStr() {
 			if (this.form.startTime) {
-				const d = new Date(this.form.startTime)
-				d.setDate(d.getDate() + 6) // +6因为包含开始当天共7天
+				const d = new Date(this.dateOnly(this.form.startTime) + 'T00:00:00')
+				d.setDate(d.getDate() + 7)
 				return this.formatDateStr(d)
 			}
 			// 未选开始日期时默认限制为今天+14天（开始7+结束7）
@@ -315,10 +354,9 @@ export default {
 		},
 		leaveDaysCalc() {
 			if (!this.form.startTime || !this.form.endTime) return 0
-			const start = new Date(this.form.startTime)
-			const end = new Date(this.form.endTime)
-			const diff = Math.ceil((end - start) / (1000 * 60 * 60 * 24)) + 1
-			return diff > 0 ? diff : 0
+			const start = this.halfIndex(this.dateOnly(this.form.startTime), this.form.startHalf)
+			const end = this.halfIndex(this.dateOnly(this.form.endTime), this.form.endHalf)
+			return end >= start ? (end - start + 1) / 2 : 0
 		},
 		reasonOptions() {
 			const opts = this.reasonMap[this.form.leaveType] || this.reasonMap.other
@@ -445,23 +483,109 @@ export default {
 			// 如果已有补充说明则拼接，否则直接设为原因
 			this.form.leaveReason = val
 		},
-		onStartChange(e) {
-			this.form.startTime = e.detail.value
-			// 如果结束日期已超出新范围（开始日期+7天），则清空结束日期
-			if (this.form.endTime) {
-				const start = new Date(this.form.startTime)
-				const end = new Date(this.form.endTime)
-				const maxEnd = new Date(start)
-				maxEnd.setDate(maxEnd.getDate() + 6)
-				if (end > maxEnd || end < start) {
-					this.form.endTime = ''
-				}
-			}
+		onStartDateChange(e) {
+			this.form.startTime = this.buildTimeStr(e.detail.value, this.form.startHalf, false)
+			this.ensureEndAfterStart()
 			this.fetchScoreHint()
 		},
-		onEndChange(e) {
-			this.form.endTime = e.detail.value
+		onStartHalfChange(half) {
+			if (this.form.startHalf === half) return
+			this.form.startHalf = half
+			const date = this.dateOnly(this.form.startTime) || this.todayStr
+			this.form.startTime = this.buildTimeStr(date, half, false)
+			this.ensureEndAfterStart()
 			this.fetchScoreHint()
+		},
+		onEndDateChange(e) {
+			this.form.endTime = this.buildTimeStr(e.detail.value, this.form.endHalf, true)
+			this.ensureEndAfterStart()
+			this.fetchScoreHint()
+		},
+		onEndHalfChange(half) {
+			if (this.form.endHalf === half) return
+			this.form.endHalf = half
+			let date = this.dateOnly(this.form.endTime) || this.dateOnly(this.form.startTime) || this.todayStr
+			if (this.form.startTime) {
+				const startIndex = this.halfIndex(this.dateOnly(this.form.startTime), this.form.startHalf)
+				if (this.halfIndex(date, half) < startIndex) {
+					// 同一天的上午结束早于下午开始，顺延到次日同一时段
+					date = this.dateFromHalfIndex(this.halfIndex(date, half) + 2)
+				}
+			}
+			this.form.endTime = this.buildTimeStr(date, half, true)
+			this.fetchScoreHint()
+		},
+		// 快捷选择：以已选开始时间为起点，按半天粒度补齐结束时间
+		applyQuickDuration(days) {
+			if (!this.form.startTime) {
+				const def = this.defaultStart()
+				this.form.startHalf = def.half
+				this.form.startTime = this.buildTimeStr(def.date, def.half, false)
+			}
+			const startIndex = this.halfIndex(this.dateOnly(this.form.startTime), this.form.startHalf)
+			const endIndex = startIndex + Math.round(days * 2) - 1
+			this.form.endHalf = endIndex % 2 === 0 ? 'am' : 'pm'
+			this.form.endTime = this.buildTimeStr(this.dateFromHalfIndex(endIndex), this.form.endHalf, true)
+			this.fetchScoreHint()
+		},
+		// 结束时间早于开始时间时，自动落到“同半天”，保证至少 0.5 天
+		ensureEndAfterStart() {
+			if (!this.form.startTime) return
+			const startDate = this.dateOnly(this.form.startTime)
+			if (!this.form.endTime) {
+				this.form.endHalf = this.form.startHalf
+				this.form.endTime = this.buildTimeStr(startDate, this.form.endHalf, true)
+				return
+			}
+			const startIndex = this.halfIndex(startDate, this.form.startHalf)
+			const endIndex = this.halfIndex(this.dateOnly(this.form.endTime), this.form.endHalf)
+			if (endIndex < startIndex) {
+				this.form.endHalf = this.form.startHalf
+				this.form.endTime = this.buildTimeStr(startDate, this.form.endHalf, true)
+				return
+			}
+			// 单次最多7天，修改开始日期后把超出的结束时间收回到上限
+			const maxEndIndex = startIndex + 13
+			if (endIndex > maxEndIndex) {
+				this.form.endHalf = maxEndIndex % 2 === 0 ? 'am' : 'pm'
+				this.form.endTime = this.buildTimeStr(this.dateFromHalfIndex(maxEndIndex), this.form.endHalf, true)
+			}
+		},
+		defaultStart() {
+			const now = new Date()
+			const half = now.getHours() >= 18 ? 'am' : (now.getHours() >= 12 ? 'pm' : 'am')
+			const d = new Date(now)
+			if (now.getHours() >= 18) d.setDate(d.getDate() + 1)
+			return { date: this.formatDateStr(d), half }
+		},
+		halfText(half) {
+			return half === 'pm' ? '下午' : '上午'
+		},
+		dateOnly(val) {
+			if (!val) return ''
+			return String(val).replace('T', ' ').substring(0, 10)
+		},
+		buildTimeStr(dateStr, half, isEnd) {
+			let time
+			if (isEnd) {
+				time = half === 'am' ? '12:00:00' : '18:00:00'
+			} else {
+				time = half === 'am' ? '08:00:00' : '14:00:00'
+			}
+			return `${dateStr} ${time}`
+		},
+		// 用日期序号*2 + 上下午表示半天序号，避免时区和夏令时影响
+		halfIndex(dateStr, half) {
+			const parts = String(dateStr).split('-').map(Number)
+			const dayIndex = Math.floor(Date.UTC(parts[0], parts[1] - 1, parts[2]) / 86400000)
+			return dayIndex * 2 + (half === 'pm' ? 1 : 0)
+		},
+		dateFromHalfIndex(index) {
+			const d = new Date(Math.floor(index / 2) * 86400000)
+			const y = d.getUTCFullYear()
+			const m = String(d.getUTCMonth() + 1).padStart(2, '0')
+			const day = String(d.getUTCDate()).padStart(2, '0')
+			return `${y}-${m}-${day}`
 		},
 		onTransportChange(e) {
 			const idx = e.detail.value
@@ -553,9 +677,10 @@ export default {
 		},
 		async submitApply() {
 			if (!this.form.leaveType) return uni.showToast({ title: '请选择请假类型', icon: 'none' })
-			if (!this.form.startTime) return uni.showToast({ title: '请选择开始日期', icon: 'none' })
-			if (!this.form.endTime) return uni.showToast({ title: '请选择结束日期', icon: 'none' })
-			if (this.leaveDaysCalc <= 0) return uni.showToast({ title: '结束日期不能早于开始日期', icon: 'none' })
+			if (!this.form.startTime) return uni.showToast({ title: '请选择开始时间', icon: 'none' })
+			if (!this.form.endTime) return uni.showToast({ title: '请选择结束时间', icon: 'none' })
+			if (this.leaveDaysCalc <= 0) return uni.showToast({ title: '结束时间不能早于开始时间', icon: 'none' })
+			if (this.leaveDaysCalc > 7) return uni.showToast({ title: '单次请假最多7天，请线下申请', icon: 'none' })
 			if (!this.form.reasonType) {
 				return uni.showToast({ title: '请选择请假原因', icon: 'none' })
 			}
@@ -586,8 +711,11 @@ export default {
 					}
 				}
 
+				const formData = { ...this.form }
+				delete formData.startHalf
+				delete formData.endHalf
 				await applyLeave({
-					...this.form,
+					...formData,
 					contactPhone: currentPhone,
 					leaveDays: this.leaveDaysCalc,
 					fileList: this.uploadedFiles
@@ -598,6 +726,8 @@ export default {
 					leaveType: 'personal',
 					startTime: '',
 					endTime: '',
+					startHalf: 'am',
+					endHalf: 'pm',
 					leaveReason: '',
 					reasonType: '',
 					destination: '',
@@ -633,6 +763,18 @@ export default {
 		formatDate(val) {
 			if (!val) return '--'
 			return String(val).substring(0, 10)
+		},
+		formatLeaveRange(start, end) {
+			const format = (val) => {
+				if (!val) return '--'
+				const text = String(val).replace('T', ' ')
+				return text.length >= 16 ? text.substring(5, 16) : text.substring(0, 10)
+			}
+			return `${format(start)} 至 ${format(end)}`
+		},
+		formatDays(days) {
+			const value = Number(days) || 0
+			return value % 1 === 0 ? String(value) : value.toFixed(1)
 		},
 		// 审批流程文本
 		flowText(item) {
@@ -732,9 +874,20 @@ export default {
 .radio-group { display: flex; flex-wrap: wrap; gap: 12rpx; }
 .radio-item { padding: 10rpx 24rpx; border-radius: 28rpx; border: 2rpx solid #ddd; font-size: 26rpx; color: #555; }
 .radio-active { border-color: #4a7cf6; color: #4a7cf6; background: #f0f4ff; }
+.quick-duration { display: flex; flex-wrap: wrap; gap: 12rpx; margin-bottom: 16rpx; }
+.quick-chip { padding: 10rpx 26rpx; border-radius: 28rpx; border: 2rpx solid #d9e2ff; background: #f7f9ff; color: #4a7cf6; font-size: 24rpx; }
+.quick-active { background: #4a7cf6; border-color: #4a7cf6; color: #fff; }
+.time-block { margin-bottom: 12rpx; }
+.time-block-label { display: block; font-size: 24rpx; color: #888; margin-bottom: 6rpx; }
+.time-row { display: flex; align-items: stretch; }
+.time-date-picker { flex: 1; min-width: 0; }
+.half-toggle { display: flex; margin-left: 12rpx; border: 2rpx solid #e8e8e8; border-radius: 12rpx; overflow: hidden; flex-shrink: 0; }
+.half-item { padding: 16rpx 22rpx; font-size: 24rpx; color: #666; background: #fff; }
+.half-active { background: #4a7cf6; color: #fff; }
 .picker-display { display: flex; justify-content: space-between; align-items: center; border: 2rpx solid #e8e8e8; border-radius: 12rpx; padding: 16rpx 20rpx; font-size: 26rpx; color: #333; }
 .arrow { color: #bbb; font-size: 28rpx; }
 .days-text { font-size: 28rpx; color: #4a7cf6; font-weight: bold; }
+.days-warn { font-size: 22rpx; color: #f5222d; margin-left: 12rpx; }
 .textarea { width: 100%; border: 2rpx solid #e8e8e8; border-radius: 12rpx; padding: 16rpx 20rpx; font-size: 26rpx; color: #333; min-height: 100rpx; box-sizing: border-box; }
 .char-count { font-size: 22rpx; color: #bbb; text-align: right; display: block; margin-top: 4rpx; }
 .input { border: 2rpx solid #e8e8e8; border-radius: 12rpx; padding: 16rpx 20rpx; font-size: 26rpx; color: #333; }
