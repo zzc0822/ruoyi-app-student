@@ -320,7 +320,7 @@
 </template>
 
 <script>
-	import userInfoApi from "@/api/userInfo.js"
+	import userInfoApi from "@/api/student/userInfo.js"
 	import config from '@/config';
 	import {
 		isLogin,

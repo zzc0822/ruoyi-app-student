@@ -38,8 +38,8 @@
 		isLogin,
 		getUserId
 	} from "@/utils/auth";
-	import operateApi from "@/api/operate";
-	import touristApi from "@/api/tourist";
+	import operateApi from "@/api/campus/operate";
+	import touristApi from "@/api/campus/tourist";
 
 	export default {
 		name: "MoreReplies",

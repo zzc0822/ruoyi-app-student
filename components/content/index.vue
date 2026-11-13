@@ -79,7 +79,7 @@
 		getUserId
 	} from "@/utils/auth";
 
-	import operateApi from "@/api/operate";
+	import operateApi from "@/api/campus/operate";
 
 	export default {
 		name: "Content",

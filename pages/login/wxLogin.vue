@@ -34,7 +34,7 @@
 	import {
 		studentSilentLogin,
 		studentPhoneLogin
-	} from "@/api/login"
+	} from "@/api/auth/login"
 	import {
 		setToken,
 		getToken

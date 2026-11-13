@@ -8,7 +8,7 @@
 
 <script>
 	//getContentById
-	import touristApi from "@/api/tourist";
+	import touristApi from "@/api/campus/tourist";
 	//引用组件
 	import Content from "@/components/content/index";
 

@@ -38,8 +38,8 @@
 </template>
 
 <script>
-	import touristApi from "@/api/tourist";
-	import operateApi from "@/api/operate";
+	import touristApi from "@/api/campus/tourist";
+	import operateApi from "@/api/campus/operate";
 
 	import {
 		getUserId,

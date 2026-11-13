@@ -47,7 +47,7 @@
 </template>
 
 <script>
-	import userInfoApi from "@/api/userInfo.js"
+	import userInfoApi from "@/api/student/userInfo.js"
 	import { removeToken } from "@/utils/auth";
 	import requireLogin from '@/mixins/requireLogin.js';
 

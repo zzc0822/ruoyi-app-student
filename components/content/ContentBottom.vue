@@ -47,7 +47,7 @@
 	const dzNotImage = require('@/static/icon/dz.png')
 	const dzImage = require('@/static/icon/dz1.png')
 
-	import operateApi from "@/api/operate";
+	import operateApi from "@/api/campus/operate";
 
 	//复制
 	// import Clipboard from "clipboard";

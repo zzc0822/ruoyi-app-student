@@ -177,8 +177,8 @@
 
 <script>
 	//api
-	import touristApi from "@/api/tourist";
-	import operateApi from "@/api/operate";
+	import touristApi from "@/api/campus/tourist";
+	import operateApi from "@/api/campus/operate";
 	import { getMySchedule, getCurrentInfo } from '@/api/activity/schedule'
 	import { listMyTodo } from '@/api/affair/todo'
 	import userInfoApi from '@/api/student/userInfo.js'
