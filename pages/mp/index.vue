@@ -224,12 +224,31 @@
 			},
 			rowSub(row) {
 				if (this.activeTab === 'leave') {
-					return (row.startTime || '') + ' 至 ' + (row.endTime || '') + ' · ' + this.leaveStatus(row.approvalStatus)
+					return this.formatTime(row.startTime) + ' 至 ' + this.formatTime(row.endTime) + ' · ' +
+						this.leaveType(row.leaveType) + ' · ' + this.leaveStatus(row.approvalStatus)
 				}
 				if (this.activeTab === 'arrears') {
 					return '待缴 ' + this.money(row.balance) + ' 元 · ' + (row.counselorName || '')
 				}
-				return (row.checkDate || '') + ' · 已查 ' + (row.checkedCount || 0) + '/' + (row.roomCount || 0) + ' 间'
+				return this.formatDate(row.checkDate) + ' · 已查 ' + (row.checkedCount || 0) + '/' + (row.roomCount || 0) + ' 间'
+			},
+			leaveType(type) {
+				if (type === 'sick') return '病假'
+				if (type === 'public') return '公假'
+				if (type === 'personal') return '事假'
+				return type || '请假'
+			},
+			formatDate(value) {
+				if (!value) return ''
+				const parts = String(value).replace('T', ' ').replace(/-/g, '/').split(/[ /:]/)
+				if (parts.length < 3) return String(value)
+				return parts[1] + '-' + parts[2]
+			},
+			formatTime(value) {
+				if (!value) return ''
+				const parts = String(value).replace('T', ' ').replace(/-/g, '/').split(/[ /:]/)
+				if (parts.length < 5) return String(value)
+				return parts[1] + '-' + parts[2] + ' ' + parts[3] + ':' + parts[4]
 			},
 			leaveStatus(status) {
 				if (status === 'pending') return '审批中'
