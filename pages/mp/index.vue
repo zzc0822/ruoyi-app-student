@@ -92,6 +92,7 @@
 				dorm: {},
 				grades: [],
 				activeTab: 'overview',
+				initialTab: '',
 				detailList: [],
 				tabs: [
 					{ key: 'overview', label: '总览' },
@@ -112,6 +113,8 @@
 			if (this.appId) {
 				uni.setStorageSync('mpAppId', this.appId)
 			}
+			const tab = options.tab || ''
+			this.initialTab = this.tabs.some(item => item.key === tab) ? tab : ''
 			if (!this.appId) {
 				this.loginTip = '请从学院公众号菜单进入'
 				return
@@ -121,6 +124,7 @@
 			if (token) {
 				this.loggedIn = true
 				this.loadSummary()
+				this.applyInitialTab()
 				return
 			}
 			if (options.code) {
@@ -164,15 +168,22 @@
 					setToken(token)
 					this.loggedIn = true
 					this.loadSummary()
+					this.applyInitialTab()
 				}).catch(() => {
 					this.goLogin()
 				})
 			},
 			goLogin() {
-				const redirect = encodeURIComponent('/pages/mp/index?appId=' + this.appId)
+				const tabQuery = this.initialTab ? '&tab=' + this.initialTab : ''
+				const redirect = encodeURIComponent('/pages/mp/index?appId=' + this.appId + tabQuery)
 				uni.reLaunch({
 					url: '/pages/login/accountLogin?redirect=' + redirect
 				})
+			},
+			applyInitialTab() {
+				if (this.initialTab && this.initialTab !== 'overview') {
+					this.switchTab(this.initialTab)
+				}
 			},
 			loadSummary() {
 				getCollegeSummary().then(res => {
