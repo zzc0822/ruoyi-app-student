@@ -39,6 +39,13 @@
 			}
 		},
 		{
+			//公众号菜单进入的学院数据页
+			"path": "pages/mp/index",
+			"style": {
+				"navigationBarTitleText": "学院数据"
+			}
+		},
+		{
 			"path": "pages/me/setting",
 			"style": {
 				"navigationBarTitleText": "系统设置"

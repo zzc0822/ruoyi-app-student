@@ -25,7 +25,7 @@
 <script>
 	import {
 		setWxampCode
-	} from "@/api/login"
+	} from "@/api/auth/login"
 
 	export default {
 		data() {

@@ -41,7 +41,7 @@
 	import {
 		getCodeImg,
 		login
-	} from "@/api/login";
+	} from "@/api/auth/login";
 	import {
 		getToken,
 		setToken,
@@ -75,14 +75,16 @@
 					}],
 				},
 				loading: false,
+				redirect: '',
 				// 验证码开关
 				captchaEnabled: true,
 			};
 		},
-		onLoad() {
+		onLoad(options) {
+			this.redirect = (options && options.redirect) ? decodeURIComponent(options.redirect) : ''
 			if (getToken() !== "") {
 				uni.reLaunch({
-					url: '/pages/index/tab',
+					url: this.redirect || '/pages/index/tab',
 					fail: function(e) {}
 				})
 			}
@@ -148,7 +150,7 @@
 							this.setCookies(data);
 							//跳转到me
 							uni.reLaunch({
-								url: '/pages/index/tab?PageCur=2',
+								url: this.redirect || '/pages/index/tab?PageCur=2',
 								fail: function(e) {}
 							})
 						})
