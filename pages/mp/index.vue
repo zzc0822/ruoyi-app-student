@@ -47,8 +47,9 @@
 				</view>
 				<view class="panel-title second">欠费与查寝</view>
 				<view class="kv"><text>待缴金额</text><text>{{ money(arrears.amount) }} 元</text></view>
-				<view class="kv"><text>查寝覆盖房间</text><text>{{ num(dorm.rooms) }} 间</text></view>
-				<view class="kv"><text>已查房间</text><text>{{ num(dorm.checked) }} 间</text></view>
+				<view class="kv"><text>在校床位</text><text>{{ num(dorm.beds) }} 个</text></view>
+				<view class="kv"><text>近30天查寝覆盖</text><text>{{ num(dorm.rooms) }} 间</text></view>
+				<view class="kv"><text>其中已查</text><text>{{ num(dorm.checked) }} 间</text></view>
 			</view>
 
 			<view v-else class="panel">
