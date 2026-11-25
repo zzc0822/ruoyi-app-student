@@ -35,7 +35,7 @@
 <script>
 	import {
 		wxampBind
-	} from "@/api/login";
+	} from "@/api/auth/login";
 	import {
 		getToken,
 		setToken,

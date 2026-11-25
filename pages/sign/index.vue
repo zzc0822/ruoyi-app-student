@@ -3,7 +3,7 @@
 		<view class="hero">
 			<view>
 				<text class="hero-title">手机点名</text>
-				<text class="hero-desc">课堂签到与晚寝确认都在这里完成</text>
+				<text class="hero-desc">课堂、晚寝与活动签到都在这里完成</text>
 			</view>
 			<view class="scan-button" @click="scanQr()">
 				<u-icon name="scan" size="42" color="#ffffff"></u-icon>
@@ -28,7 +28,7 @@
 			<view class="task-card" v-for="task in tasks" :key="task.sessionId">
 				<view class="task-head">
 					<view class="task-title-wrap">
-						<text class="scene-tag" :class="task.scene">{{ task.scene === 'dorm' ? '晚寝' : '课堂' }}</text>
+						<text class="scene-tag" :class="task.scene">{{ sceneLabel(task.scene) }}</text>
 						<text class="task-title">{{ task.sessionName }}</text>
 					</view>
 					<text class="type-tag">{{ signTypeText(task.signType) }}</text>
@@ -42,9 +42,13 @@
 						<u-icon name="account" size="15" color="#7a8494"></u-icon>
 						<text>{{ task.className || task.bjdm || '本班课堂' }}</text>
 					</view>
-					<view class="meta-row" v-else>
+					<view class="meta-row" v-else-if="task.scene === 'dorm'">
 						<u-icon name="home" size="15" color="#7a8494"></u-icon>
 						<text>{{ task.dormBuilding }} {{ task.dormFloor || '' }}</text>
+					</view>
+					<view class="meta-row" v-else>
+						<u-icon name="calendar" size="15" color="#7a8494"></u-icon>
+						<text>{{ task.sessionName }}</text>
 					</view>
 					<view class="meta-row" v-if="task.courseName || task.classRoom">
 						<u-icon name="map" size="15" color="#7a8494"></u-icon>
@@ -52,15 +56,23 @@
 					</view>
 				</view>
 
-				<view class="code-row" v-if="task.signType === 'code'">
+				<view class="code-row" v-if="task.signType === 'code' || task.scene === 'activity'">
 					<input
 						class="code-input"
 						type="number"
-						maxlength="4"
+						:maxlength="task.scene === 'activity' ? 6 : 4"
 						:value="codeInputs[task.sessionId] || ''"
-						placeholder="输入教师提供的 4 位签到码"
+						:placeholder="task.scene === 'activity' ? '输入活动负责人提供的 6 位签到码' : '输入教师提供的 4 位签到码'"
 						@input="setCode(task.sessionId, $event.detail.value)"
 					/>
+					<button
+						v-if="task.scene === 'activity'"
+						class="code-submit"
+						:loading="submitting[task.sessionId]"
+						@click.stop="confirmActivityByCode(task)"
+					>
+						使用签到码签到
+					</button>
 				</view>
 
 				<button
@@ -93,7 +105,8 @@ import {
 	getSignSessionDetail,
 	signByCode,
 	signByQr,
-	signByLocation
+	signByLocation,
+	signActivityByCode
 } from '@/api/attendance/sign'
 import requireLogin from '@/mixins/requireLogin.js'
 
@@ -105,12 +118,18 @@ export default {
 			sceneTabs: [
 				{ value: '', label: '全部' },
 				{ value: 'class', label: '课堂签到' },
-				{ value: 'dorm', label: '晚寝确认' }
+				{ value: 'dorm', label: '晚寝确认' },
+				{ value: 'activity', label: '活动签到' }
 			],
 			tasks: [],
 			loading: false,
 			codeInputs: {},
 			submitting: {}
+		}
+	},
+	onLoad(options) {
+		if (options && ['class', 'dorm', 'activity'].includes(options.scene)) {
+			this.scene = options.scene
 		}
 	},
 	onShow() {
@@ -138,7 +157,9 @@ export default {
 			this.loadTasks()
 		},
 		setCode(sessionId, value) {
-			this.$set(this.codeInputs, sessionId, String(value || '').replace(/\D/g, '').slice(0, 4))
+			const task = this.tasks.find(item => item.sessionId === sessionId)
+			const max = task && task.scene === 'activity' ? 6 : 4
+			this.$set(this.codeInputs, sessionId, String(value || '').replace(/\D/g, '').slice(0, max))
 		},
 		signTypeText(type) {
 			return { code: '签到码', qr: '二维码', location: '定位确认' }[type] || '手机确认'
@@ -147,7 +168,13 @@ export default {
 			if (task.scene === 'dorm') {
 				return task.signType === 'location' ? '确认我在宿舍楼' : '确认我在寝'
 			}
+			if (task.scene === 'activity') {
+				return task.signType === 'qr' ? '扫码确认活动签到' : '确认活动签到'
+			}
 			return task.signType === 'location' ? '确认我已到课' : '确认签到'
+		},
+		sceneLabel(scene) {
+			return { class: '课堂', dorm: '晚寝', activity: '活动' }[scene] || '签到'
 		},
 		formatTime(value) {
 			if (!value) return '--:--'
@@ -163,6 +190,18 @@ export default {
 				scanType: ['qrCode'],
 				success: async result => {
 					const content = String(result.result || '')
+					const activityUrlMatch = content.match(/[?&]sessionId=(\d+).*?[?&]ticket=([a-zA-Z0-9]+)/)
+					if (activityUrlMatch) {
+						const sessionId = Number(activityUrlMatch[1])
+						if (expectedSessionId && sessionId !== expectedSessionId) {
+							uni.showToast({ title: '二维码不属于当前签到任务', icon: 'none' })
+							return
+						}
+						uni.navigateTo({
+							url: `/pages/activity/checkin?sessionId=${sessionId}&ticket=${activityUrlMatch[2]}`
+						})
+						return
+					}
 					const match = content.match(/^SIGN:(\d+):([a-f0-9]+)$/)
 					if (!match) {
 						uni.showToast({ title: '不是有效的点名二维码', icon: 'none' })
@@ -192,11 +231,15 @@ export default {
 			if (this.submitting[task.sessionId]) return
 			if (task.signType === 'code') {
 				const code = this.codeInputs[task.sessionId] || ''
-				if (code.length !== 4) {
-					uni.showToast({ title: '请输入 4 位签到码', icon: 'none' })
+				const expectedLength = task.scene === 'activity' ? 6 : 4
+				if (code.length !== expectedLength) {
+					uni.showToast({ title: `请输入 ${expectedLength} 位签到码`, icon: 'none' })
 					return
 				}
-				return this.execute(task.sessionId, () => signByCode(task.sessionId, code))
+				return this.execute(task.sessionId,
+					() => task.scene === 'activity'
+						? signActivityByCode(task.sessionId, code)
+						: signByCode(task.sessionId, code))
 			}
 			if (task.signType === 'qr') {
 				this.scanQr(task.sessionId)
@@ -206,6 +249,15 @@ export default {
 				return this.submitLocation(task.sessionId)
 			}
 			uni.showToast({ title: '该任务暂不支持手机确认', icon: 'none' })
+		},
+		async confirmActivityByCode(task) {
+			if (this.submitting[task.sessionId]) return
+			const code = this.codeInputs[task.sessionId] || ''
+			if (!/^\d{6}$/.test(code)) {
+				uni.showToast({ title: '请输入 6 位签到码', icon: 'none' })
+				return
+			}
+			return this.execute(task.sessionId, () => signActivityByCode(task.sessionId, code))
 		},
 		async submitQr(sessionId, token) {
 			return this.execute(sessionId, () => signByQr(sessionId, token))
@@ -355,6 +407,10 @@ export default {
 	background: #e9f7f1;
 	color: #16865c;
 }
+.scene-tag.activity {
+	background: #fff3df;
+	color: #b26900;
+}
 .type-tag {
 	background: #f3f5f8;
 	color: #667085;
@@ -387,6 +443,19 @@ export default {
 	padding: 0 22rpx;
 	font-size: 30rpx;
 	letter-spacing: 8rpx;
+}
+.code-submit {
+	margin-top: 12rpx;
+	height: 68rpx;
+	line-height: 68rpx;
+	border: none;
+	border-radius: 12rpx;
+	background: #fff3df;
+	color: #a65f00;
+	font-size: 24rpx;
+}
+.code-submit::after {
+	border: none;
 }
 .sign-button {
 	margin-top: 22rpx;

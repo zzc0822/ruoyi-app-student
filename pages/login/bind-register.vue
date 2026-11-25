@@ -42,7 +42,7 @@
 <script>
 	import {
 		wxampRegister
-	} from "@/api/login";
+	} from "@/api/auth/login";
 	import {
 		getToken,
 		setToken,

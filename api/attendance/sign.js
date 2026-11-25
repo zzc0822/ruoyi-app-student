@@ -46,3 +46,36 @@ export function getMySignRecords(params) {
 		params
 	})
 }
+
+// ========== 活动动态二维码签到 ==========
+export function getActivityCheckinTicket(sessionId, ticket) {
+	return request({
+		url: '/api/sign/activity/ticket',
+		method: 'get',
+		params: { sessionId, ticket }
+	})
+}
+
+export function signActivityByQr(sessionId, ticket) {
+	return request({
+		url: '/api/sign/activity/qr',
+		method: 'post',
+		params: { sessionId, ticket }
+	})
+}
+
+export function signActivityByCode(sessionId, code) {
+	return request({
+		url: '/api/sign/activity/code',
+		method: 'post',
+		params: { sessionId, code }
+	})
+}
+
+export function submitActivityAppeal(activityId, reason, evidence) {
+	return request({
+		url: '/api/sign/activity/appeal',
+		method: 'post',
+		params: { activityId, reason, evidence }
+	})
+}

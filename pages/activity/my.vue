@@ -18,6 +18,14 @@
 					<text class="item-label">报名时间</text>
 					<text class="item-value">{{ formatDate(item.signupTime) }}</text>
 				</view>
+				<view class="item-row">
+					<text class="item-label">活动考勤</text>
+					<text class="item-value">{{ formatAttendance(item.attendanceStatus) }}</text>
+				</view>
+				<view class="item-row" v-if="item.settleStatus === '1'">
+					<text class="item-label">积分状态</text>
+					<text class="item-value score-state">{{ item.scoreGiven ? '已结算并入账' : '已结算，无积分变动' }}</text>
+				</view>
 				<view class="item-actions" v-if="item.status === '0'">
 					<text class="cancel-btn" @click="cancelSignup(item)">取消报名</text>
 				</view>
@@ -135,6 +143,18 @@
 			formatCategory(val) {
 				return CATEGORY_MAP[val] || val || '-'
 			},
+			formatAttendance(val) {
+				return {
+					pending: '未开始/未签到',
+					pending_absent: '待确认缺勤',
+					signed: '正常签到',
+					late: '迟到',
+					leave: '请假',
+					excused: '免签',
+					absent: '缺勤',
+					appeal_pending: '申诉处理中'
+				}[val] || '未记录'
+			},
 			formatDate(val) {
 				if (!val) return '-'
 				const d = new Date(val.replace(/ /g, 'T'))
@@ -214,6 +234,10 @@
 	.item-value {
 		color: #333;
 		flex: 1;
+	}
+
+	.score-state {
+		color: #d97706;
 	}
 
 	.item-actions {

@@ -26,6 +26,10 @@
 				<text class="info-label">说明</text>
 				<text class="info-value">{{ activity.description || '无' }}</text>
 			</view>
+			<view class="info-row" v-if="signed">
+				<text class="info-label">考勤</text>
+				<text class="info-value attendance-value">{{ attendanceLabel(attendanceStatus) }}</text>
+			</view>
 		</view>
 
 		<view class="card" v-if="phases.length > 0">
@@ -38,8 +42,10 @@
 
 		<view class="bottom-bar">
 			<view class="btn my-btn" @click="goMy">我的活动</view>
-			<view :class="['btn', signed ? 'disabled' : 'signup']" @click="handleSignup">
-				{{ signed ? '已报名' : '立即报名' }}
+			<view class="btn sign-btn" v-if="signed && canCheckin" @click="goSign">活动签到</view>
+			<view class="btn appeal-btn" v-if="canAppeal" @click="submitAppeal">异常申诉</view>
+			<view class="btn signup" v-if="!signed" @click="handleSignup">
+				立即报名
 			</view>
 		</view>
 	</view>
@@ -50,6 +56,7 @@
 		getActivityDetail,
 		signupActivity
 	} from '@/api/activity/activity'
+	import { submitActivityAppeal } from '@/api/attendance/sign'
 	import requireLogin from '@/mixins/requireLogin.js'
 
 	const CATEGORY_MAP = {
@@ -69,12 +76,23 @@
 				activity: null,
 				phases: [],
 				signed: false,
-				myStatus: null
+				myStatus: null,
+				attendanceStatus: null,
+				appealStatus: null
 			}
 		},
 		onLoad(options) {
 			this.activityId = Number(options.id)
 			this.loadDetail()
+		},
+		computed: {
+			canCheckin() {
+				return !['signed', 'late', 'leave', 'excused', 'appeal_pending'].includes(this.attendanceStatus)
+			},
+			canAppeal() {
+				return ['absent', 'pending_absent'].includes(this.attendanceStatus)
+					&& this.appealStatus !== '1' && this.appealStatus !== '2'
+			}
 		},
 		methods: {
 			loadDetail() {
@@ -84,6 +102,8 @@
 					this.phases = data.phases || []
 					this.signed = data.signed
 					this.myStatus = data.myStatus
+					this.attendanceStatus = data.attendanceStatus
+					this.appealStatus = data.appealStatus
 				})
 			},
 			handleSignup() {
@@ -113,6 +133,45 @@
 				uni.navigateTo({
 					url: '/pages/activity/my'
 				})
+			},
+			goSign() {
+				uni.navigateTo({
+					url: '/pages/sign/index?scene=activity'
+				})
+			},
+			submitAppeal() {
+				uni.showModal({
+					title: '异常申诉',
+					editable: true,
+					placeholderText: '请说明未签到原因，并准备佐证材料',
+					success: async res => {
+						const reason = String(res.content || '').trim()
+						if (!res.confirm || !reason) return
+						try {
+							const response = await submitActivityAppeal(this.activityId, reason, '')
+							const payload = response.data || {}
+							if (payload.code === 200) {
+								this.attendanceStatus = 'appeal_pending'
+								this.appealStatus = '1'
+								uni.showToast({ title: '申诉已提交', icon: 'success' })
+							} else {
+								uni.showToast({ title: payload.msg || '申诉提交失败', icon: 'none' })
+							}
+						} catch (e) {}
+					}
+				})
+			},
+			attendanceLabel(status) {
+				return {
+					pending: '未签到',
+					pending_absent: '待确认缺勤',
+					signed: '正常签到',
+					late: '迟到',
+					leave: '请假',
+					excused: '免签',
+					absent: '缺勤',
+					appeal_pending: '申诉处理中'
+				}[status] || '未签到'
 			},
 			formatCategory(val) {
 				return CATEGORY_MAP[val] || val || '-'
@@ -211,6 +270,22 @@
 	.signup {
 		background: #2979ff;
 		color: #fff;
+	}
+
+	.sign-btn {
+		background: #ff9800;
+		color: #fff;
+		margin-right: 10px;
+	}
+
+	.appeal-btn {
+		background: #fff1f0;
+		color: #d93026;
+		margin-right: 10px;
+	}
+
+	.attendance-value {
+		color: #d97706;
 	}
 
 	.disabled {

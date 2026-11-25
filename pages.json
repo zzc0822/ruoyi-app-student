@@ -110,6 +110,13 @@
 				"enablePullDownRefresh": false
 			}
 		},
+		{
+			"path": "pages/activity/checkin",
+			"style": {
+				"navigationBarTitleText": "活动签到确认",
+				"enablePullDownRefresh": false
+			}
+		},
 		/** -----attendance----- */
 		{
 			"path": "pages/attendance/index",
