@@ -214,6 +214,21 @@
 				"navigationBarTitleText": "证书详情",
 				"enablePullDownRefresh": false
 			}
+		},
+		/** -----counsel----- */
+		{
+			"path": "pages/counsel/index",
+			"style": {
+				"navigationBarTitleText": "心理咨询",
+				"enablePullDownRefresh": false
+			}
+		},
+		{
+			"path": "pages/counsel/detail",
+			"style": {
+				"navigationBarTitleText": "预约详情",
+				"enablePullDownRefresh": false
+			}
 		}
 
 	],

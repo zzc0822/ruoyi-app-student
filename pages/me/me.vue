@@ -80,6 +80,10 @@
 					<text class="quick-btn-icon">🏃</text>
 					<text class="quick-btn-label">运动健康</text>
 				</view>
+				<view class="quick-btn" @click="goCounsel">
+					<text class="quick-btn-icon">🌱</text>
+					<text class="quick-btn-label">心理咨询</text>
+				</view>
 			</view>
 
 			<!-- 功能 Tab 页 -->
@@ -721,6 +725,9 @@
 			goSport() {
 				uni.navigateTo({ url: '/pages/sport/index' });
 			},
+			goCounsel() {
+				uni.navigateTo({ url: '/pages/counsel/index' });
+			},
 		}
 	}
 </script>
@@ -879,7 +886,7 @@
 	/* 功能快捷入口 */
 	.quick-btns {
 		display: flex;
-		gap: 20rpx;
+		gap: 12rpx;
 		margin: 0 15px 15px;
 	}
 
@@ -887,7 +894,7 @@
 		flex: 1;
 		background: #fff;
 		border-radius: 12px;
-		padding: 20rpx 0;
+		padding: 18rpx 0;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
@@ -900,7 +907,7 @@
 	}
 
 	.quick-btn-label {
-		font-size: 24rpx;
+		font-size: 22rpx;
 		color: #444;
 	}
 

@@ -90,6 +90,14 @@
 					<text class="function-name">我的证书</text>
 					<text class="function-desc">查看荣誉证书</text>
 				</view>
+
+				<view class="function-item" @click="navigateTo('/pages/counsel/index')">
+					<view class="function-icon counsel-icon">
+						<u-icon name="heart" size="48" color="#fff"></u-icon>
+					</view>
+					<text class="function-name">心理咨询</text>
+					<text class="function-desc">预约咨询时段</text>
+				</view>
 			</view>
 		</view>
 
@@ -614,6 +622,10 @@
 
 .certificate-icon {
 	background: linear-gradient(135deg, #ffd700 0%, #ffaa00 100%);
+}
+
+.counsel-icon {
+	background: linear-gradient(135deg, #2563eb 0%, #14b8a6 100%);
 }
 
 .function-name {
