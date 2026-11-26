@@ -55,6 +55,31 @@
 				</view>
 			</view>
 
+			<view class="block" v-if="appointment && appointment.status === 'COMPLETED'">
+				<view class="consent-title-row">
+					<text class="block-title">辅导员协同</text>
+					<text :class="['consent-badge', collabConsent && collabConsent.granted ? 'on' : 'off']">
+						{{ collabConsent && collabConsent.granted ? '已授权' : '未授权' }}
+					</text>
+				</view>
+				<view class="consent-copy">{{ collabMessage }}</view>
+				<view class="consent-row">
+					<view class="consent-person">
+						<text class="consent-name">{{ collabConsent && collabConsent.granteeName ? collabConsent.granteeName : '班级辅导员' }}</text>
+						<text class="consent-sub">{{ collabConsent && collabConsent.granted ? '可查看协同摘要并跟进' : '仅在你授权后可见' }}</text>
+					</view>
+					<switch
+						:checked="!!(collabConsent && collabConsent.granted)"
+						:disabled="consentSaving || !collabConsent || !collabConsent.summaryReady"
+						color="#2563eb"
+						@change="toggleCollabConsent" />
+				</view>
+				<view class="consent-note">只共享关注事项和建议，不含咨询原文、诊断和量表原始作答。</view>
+				<view class="consent-note" v-if="collabConsent && collabConsent.granted && collabConsent.validTo">
+					授权有效期至 {{ formatFull(collabConsent.validTo) }}，可随时撤回。
+				</view>
+			</view>
+
 			<view class="block">
 				<text class="block-title">我的诉求</text>
 				<view class="content-item">
@@ -86,7 +111,9 @@
 <script>
 	import {
 		getCounselAppointment,
-		cancelCounselAppointment
+		cancelCounselAppointment,
+		getCounselCollabConsent,
+		updateCounselCollabConsent
 	} from '@/api/counsel/index.js'
 	import requireLogin from '@/mixins/requireLogin.js'
 
@@ -111,7 +138,9 @@
 			return {
 				id: '',
 				appointment: null,
-				loading: true
+				loading: true,
+				collabConsent: null,
+				consentSaving: false
 			}
 		},
 		computed: {
@@ -137,6 +166,13 @@
 				if (['PENDING', 'CONFIRMED'].indexOf(this.appointment.status) < 0) return false
 				const start = this.parseTime(this.appointment.scheduledStart)
 				return start && start.getTime() > Date.now()
+			},
+			collabMessage() {
+				if (!this.collabConsent) {
+					return '咨询结束后，如咨询师生成协同摘要，可在这里决定是否授权辅导员查看。'
+				}
+				return this.collabConsent.message
+					|| '咨询结束后，如咨询师生成协同摘要，可在这里决定是否授权辅导员查看。'
 			}
 		},
 		onLoad(options) {
@@ -153,11 +189,48 @@
 				try {
 					const res = await getCounselAppointment(this.id)
 					this.appointment = res.data.data || null
+					if (this.appointment && this.appointment.status === 'COMPLETED') {
+						await this.loadCollabConsent()
+					}
 				} catch (e) {
 					this.appointment = null
 				} finally {
 					this.loading = false
 				}
+			},
+			async loadCollabConsent() {
+				try {
+					const res = await getCounselCollabConsent(this.id)
+					this.collabConsent = res.data.data || null
+				} catch (e) {
+					this.collabConsent = null
+				}
+			},
+			toggleCollabConsent(event) {
+				const granted = !!event.detail.value
+				const action = granted ? '授权' : '撤回'
+				const content = granted
+					? '授权后班级辅导员可看到本次咨询的协同事项和建议，不包含咨询原文。确认授权？'
+					: '撤回后辅导员将不能继续查看协同摘要，相关跟进任务会取消。确认撤回？'
+				uni.showModal({
+					title: action + '协同授权',
+					content,
+					confirmText: '确认' + action,
+					confirmColor: granted ? '#2563eb' : '#dc2626',
+					success: async res => {
+						if (!res.confirm) return
+						this.consentSaving = true
+						try {
+							const result = await updateCounselCollabConsent(this.id, granted)
+							this.collabConsent = result.data.data || this.collabConsent
+							uni.showToast({ title: granted ? '已授权' : '已撤回授权', icon: 'success' })
+						} catch (e) {
+							await this.loadCollabConsent()
+						} finally {
+							this.consentSaving = false
+						}
+					}
+				})
 			},
 			cancelAppointment() {
 				uni.showModal({
@@ -360,6 +433,71 @@
 		border-radius: 12rpx;
 		padding: 16rpx 18rpx;
 		word-break: break-all;
+	}
+
+	.consent-title-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 12rpx;
+	}
+
+	.consent-badge {
+		font-size: 20rpx;
+		padding: 4rpx 14rpx;
+		border-radius: 999rpx;
+	}
+
+	.consent-badge.on {
+		background: #ecfdf5;
+		color: #047857;
+	}
+
+	.consent-badge.off {
+		background: #fff7ed;
+		color: #c2410c;
+	}
+
+	.consent-copy {
+		font-size: 23rpx;
+		color: #475569;
+		line-height: 1.7;
+		margin-bottom: 18rpx;
+	}
+
+	.consent-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 20rpx;
+		padding: 18rpx;
+		background: #f8fafc;
+		border-radius: 12rpx;
+	}
+
+	.consent-person {
+		display: flex;
+		flex-direction: column;
+		gap: 6rpx;
+		min-width: 0;
+	}
+
+	.consent-name {
+		font-size: 26rpx;
+		color: #0f172a;
+		font-weight: 600;
+	}
+
+	.consent-sub {
+		font-size: 21rpx;
+		color: #94a3b8;
+	}
+
+	.consent-note {
+		margin-top: 12rpx;
+		font-size: 20rpx;
+		color: #94a3b8;
+		line-height: 1.6;
 	}
 
 	.privacy-box {

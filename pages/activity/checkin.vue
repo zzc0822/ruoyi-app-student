@@ -19,6 +19,10 @@
 				<text class="status-label">当前考勤</text>
 				<text class="status-value">{{ attendanceLabel(checkin.signStatus || checkin.attendanceStatus) }}</text>
 			</view>
+			<view class="status-row" v-if="checkin.seatLabel">
+				<text class="status-label">您的座位</text>
+				<text class="status-value seat-value">{{ checkin.seatLabel }}</text>
+			</view>
 			<view class="notice">
 				请确认本人已到达活动现场。同一活动只能签到一次，迟到将按活动规则记录。
 			</view>
@@ -241,6 +245,10 @@
 	}
 	.status-value {
 		color: #222;
+	}
+	.seat-value {
+		color: #1f6feb;
+		font-weight: 700;
 	}
 	.notice {
 		background: #f6f8fc;

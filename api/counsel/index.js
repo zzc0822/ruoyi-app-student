@@ -52,6 +52,23 @@ export function cancelCounselAppointment(id, reason) {
 	})
 }
 
+// 协同摘要授权状态
+export function getCounselCollabConsent(id) {
+	return request({
+		url: '/api/counsel/appointments/' + id + '/collab-consent',
+		method: 'get'
+	})
+}
+
+// 授权或撤回辅导员查看协同摘要
+export function updateCounselCollabConsent(id, granted) {
+	return request({
+		url: '/api/counsel/appointments/' + id + '/collab-consent',
+		method: 'post',
+		data: { granted: !!granted }
+	})
+}
+
 // 我的预约消息
 export function getCounselNotifications(limit) {
 	return request({
